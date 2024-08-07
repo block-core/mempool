@@ -54,7 +54,8 @@ export class AngorTransactionDecoder {
    * @param transactionStatus - status of the transaction.
    */
   public async decodeAndStoreProjectCreationTransaction(
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    createdOnBlock?: number
   ): Promise<void> {
     this.validateProjectCreationTransaction();
 
@@ -66,13 +67,17 @@ export class AngorTransactionDecoder {
     const projectId = this.getProjectId(projectIdDerivation);
     const nostrPubKey = this.getNostrPubKey();
     const addressOnFeeOutput = this.getAddressOnFeeOutput();
+    const txid = this.transaction.getId();
 
     // Store Angor project in the DB.
     await this.storeProjectInfo(
       projectId,
       nostrPubKey,
       addressOnFeeOutput,
-      transactionStatus
+      transactionStatus,
+      founderKeyHex,
+      txid,
+      createdOnBlock
     );
 
     // If transaction is confirmed (in the block), update statuses
@@ -176,8 +181,8 @@ export class AngorTransactionDecoder {
   private async getProject(address): Promise<any> {
     const project = await AngorProjectRepository.$getProject(address);
 
-    if (project.length) {
-      return project[0];
+    if (project) {
+      return project;
     }
 
     return undefined;
@@ -369,13 +374,19 @@ export class AngorTransactionDecoder {
     projectId: string,
     nostrPubKey: string,
     addressOnFeeOutput: string,
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    founderKey: string,
+    txid: string,
+    createdOnBlock?: number
   ): Promise<void> {
     await AngorProjectRepository.$setProject(
       projectId,
       nostrPubKey,
       addressOnFeeOutput,
-      transactionStatus
+      transactionStatus,
+      founderKey,
+      txid,
+      createdOnBlock
     );
   }
 

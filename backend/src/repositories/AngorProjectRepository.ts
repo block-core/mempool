@@ -2,6 +2,14 @@ import DB from '../database';
 import logger from '../logger';
 import { AngorTransactionStatus } from '../angor/AngorTransactionDecoder';
 
+interface Project {
+  founder_key: string;
+  npub: string;
+  id: string;
+  created_on_block: number;
+  txid: string;
+}
+
 /**
  * Angor project repository.
  */
@@ -17,7 +25,10 @@ class AngorProjectRepository {
     id: string,
     npub: string,
     addressOnFeeOutput: string,
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    founderKey: string,
+    txid: string,
+    createdOnBlock?: number
   ): Promise<void> {
     try {
       const query = `INSERT INTO angor_projects
@@ -25,9 +36,12 @@ class AngorProjectRepository {
             id,
             npub,
             address_on_fee_output,
-            creation_transaction_status
+            creation_transaction_status,
+            created_on_block,
+            txid,
+            founder_key
           )
-          VALUES ('${id}', '${npub}', '${addressOnFeeOutput}', '${transactionStatus}')
+          VALUES ('${id}', '${npub}', '${addressOnFeeOutput}', '${transactionStatus}', ${createdOnBlock}, '${txid}', '${founderKey}')
           ON DUPLICATE KEY UPDATE
             creation_transaction_status = '${transactionStatus}'
         `;
@@ -48,16 +62,72 @@ class AngorProjectRepository {
    * @param addressOnFeeOutput - address on fee output
    * @returns - promise that resolves into Angor project.
    */
-  public async $getProject(addressOnFeeOutput: string): Promise<any> {
+  public async $getProject(
+    addressOnFeeOutput: string
+  ): Promise<Project | undefined> {
     try {
       const query = `SELECT * FROM angor_projects
           WHERE address_on_fee_output = '${addressOnFeeOutput}'
         `;
 
-      // TODO: define row type
       const [rows] = await DB.query(query);
 
-      return rows;
+      return rows[0];
+    } catch (e: any) {
+      logger.err(
+        `Cannot save Angor project into db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getProjects(limit = 10, offset?: number): Promise<Project[]> {
+    const maxLimit = 50;
+
+    if (limit > maxLimit) {
+      limit = maxLimit;
+    }
+
+    const order = offset === undefined ? 'DESC' : 'ASC';
+
+    try {
+      const query = `SELECT id, founder_key, npub, created_on_block, txid
+          FROM angor_projects
+          WHERE creation_transaction_status = '${
+            AngorTransactionStatus.Confirmed
+          }'
+          ORDER BY
+                created_on_block ${order}
+          LIMIT ${limit}
+          ${offset ? `OFFSET ${offset}` : ''}
+        `;
+
+      const [rows] = await DB.query(query);
+
+      return rows as Project[];
+    } catch (e: any) {
+      logger.err(
+        `Cannot save Angor project into db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getConfirmedProjectsCount(): Promise<number> {
+    try {
+      const query = `SELECT COUNT(*) AS count
+          FROM angor_projects
+          WHERE creation_transaction_status = '${AngorTransactionStatus.Confirmed}'
+        `;
+
+      const [rows] = await DB.query(query);
+      const count = rows[0].count || 0;
+
+      return count;
     } catch (e: any) {
       logger.err(
         `Cannot save Angor project into db. Reason: ` +

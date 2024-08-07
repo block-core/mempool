@@ -21,6 +21,8 @@ describe('AngorTransactionDecoder', () => {
       projectId: 'angor1qg2pvel3j8ka62dwvmlytv6hwkz7hmk2mms7qll',
       nPub: 'c749d81fc42037e5b9f7b32ae266cbce75019ce6771be6877d3c509e97e39c14',
       addressOnFeeOutput: 'tb1qg2pvel3j8ka62dwvmlytv6hwkz7hmk2m0ncfee',
+      txid: '00b78119bb6eff9f64b2d29948ddd830f405b18dfdb802a3ec2df4eacfcd1f40',
+      blockHeight: 40000,
     };
 
     const angorDecoder = new AngorTransactionDecoder(
@@ -145,17 +147,28 @@ describe('AngorTransactionDecoder', () => {
 
         const transactionStatus = AngorTransactionStatus.Confirmed;
 
-        await angorDecoder.decodeAndStoreProjectCreationTransaction(
-          transactionStatus
-        );
+        const {
+          projectId,
+          nPub,
+          addressOnFeeOutput,
+          founderKeyHex,
+          txid,
+          blockHeight,
+        } = data;
 
-        const { projectId, nPub, addressOnFeeOutput } = data;
+        await angorDecoder.decodeAndStoreProjectCreationTransaction(
+          transactionStatus,
+          blockHeight
+        );
 
         expect(setProjectSpy).toHaveBeenCalledWith(
           projectId,
           nPub,
           addressOnFeeOutput,
-          transactionStatus
+          transactionStatus,
+          founderKeyHex,
+          txid,
+          blockHeight
         );
       });
     });
@@ -294,7 +307,7 @@ describe('AngorTransactionDecoder', () => {
       it('should call $getProject method of AngorProjectRepository', async () => {
         const getProjectSpy = jest.spyOn(AngorProjectRepository, '$getProject');
 
-        getProjectSpy.mockImplementation(() => Promise.resolve([]));
+        getProjectSpy.mockImplementation(() => Promise.resolve(undefined));
 
         await angorDecoder.decodeAndStoreInvestmentTransaction(
           transactionStatus
@@ -308,7 +321,15 @@ describe('AngorTransactionDecoder', () => {
       it('should call $setInvestment method of AngorInvestmentRepository', async () => {
         jest
           .spyOn(AngorProjectRepository, '$getProject')
-          .mockImplementation(() => Promise.resolve([{}]));
+          .mockImplementation(() =>
+            Promise.resolve({
+              founder_key: '',
+              npub: '',
+              id: '',
+              created_on_block: 1,
+              txid: '',
+            })
+          );
 
         const setInvestmentSpy = jest.spyOn(
           AngorInvestmentRepository,
