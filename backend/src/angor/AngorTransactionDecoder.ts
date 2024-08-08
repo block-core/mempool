@@ -4,7 +4,9 @@ import * as tinySecp256k1 from 'tiny-secp256k1';
 import BIP32Factory from 'bip32';
 import crypto from 'crypto';
 import { bech32 } from 'bech32';
-import AngorProjectRepository from '../repositories/AngorProjectRepository';
+import AngorProjectRepository, {
+  Project,
+} from '../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../repositories/AngorInvestmentRepository';
 
 /**
@@ -178,8 +180,9 @@ export class AngorTransactionDecoder {
    * @param address - address on fee output.
    * @returns - promise that resolves into an array of Angor projects.
    */
-  private async getProject(address): Promise<any> {
-    const project = await AngorProjectRepository.$getProject(address);
+  private async getProject(address): Promise<Project | undefined> {
+    const project =
+      await AngorProjectRepository.$getProjectByAddressOnFeeOutput(address);
 
     if (project) {
       return project;

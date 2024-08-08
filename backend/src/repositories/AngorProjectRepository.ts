@@ -2,12 +2,16 @@ import DB from '../database';
 import logger from '../logger';
 import { AngorTransactionStatus } from '../angor/AngorTransactionDecoder';
 
-interface Project {
+export interface Project {
   founder_key: string;
   npub: string;
   id: string;
   created_on_block: number;
   txid: string;
+}
+
+interface ProjectWithInvestmentsCount extends Project {
+  investments_count: number;
 }
 
 /**
@@ -62,12 +66,42 @@ class AngorProjectRepository {
    * @param addressOnFeeOutput - address on fee output
    * @returns - promise that resolves into Angor project.
    */
-  public async $getProject(
+  public async $getProjectByAddressOnFeeOutput(
     addressOnFeeOutput: string
   ): Promise<Project | undefined> {
     try {
       const query = `SELECT * FROM angor_projects
           WHERE address_on_fee_output = '${addressOnFeeOutput}'
+        `;
+
+      const [rows] = await DB.query(query);
+
+      return rows[0];
+    } catch (e: any) {
+      logger.err(
+        `Cannot save Angor project into db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getProjectWithInvestmentsCount(
+    id: string
+  ): Promise<ProjectWithInvestmentsCount> {
+    try {
+      const query = `SELECT
+            angor_projects.id,
+            angor_projects.founder_key,
+            angor_projects.npub,
+            angor_projects.created_on_block,
+            angor_projects.txid,
+            COUNT(angor_investments.txid) AS investments_count
+          FROM angor_projects
+          LEFT JOIN angor_investments
+            ON angor_projects.address_on_fee_output = angor_investments.address_on_fee_output
+          WHERE angor_projects.id = '${id}'
         `;
 
       const [rows] = await DB.query(query);

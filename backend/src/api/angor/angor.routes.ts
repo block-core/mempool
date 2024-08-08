@@ -9,6 +9,14 @@ interface ProjectsPayloadItem {
   createdOnBlock: number;
   trxId: string;
 }
+interface ProjectPayloadItem {
+  founderKey: string;
+  nostrPubKey: string;
+  projectIdentifier: string;
+  createdOnBlock: number;
+  trxId: string;
+  totalInvestmentsCount: number;
+}
 
 class AngorRoutes {
   public initRoutes(app: Application): void {
@@ -16,10 +24,14 @@ class AngorRoutes {
       config.MEMPOOL.API_URL_PREFIX + 'query/Angor/projects',
       this.$getProjects.bind(this)
     );
+    app.get(
+      config.MEMPOOL.API_URL_PREFIX + 'query/Angor/projects/:projectID',
+      this.$getProject.bind(this)
+    );
   }
 
   private async $getProjects(req: Request, res: Response): Promise<void> {
-    res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
+    this.configureDefaultHeaders(res);
 
     let limit = 10;
     let offset = 0;
@@ -73,11 +85,8 @@ class AngorRoutes {
       }
     }
 
-    res.header('Transfer-Encoding', 'chunked');
     res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Expose-Headers', '*');
-    res.header('Vary', 'Accept-Encoding');
 
     if (offset !== undefined) {
       res.header('Pagination-Offset', `${offset}`);
@@ -86,7 +95,7 @@ class AngorRoutes {
       res.header('Pagination-Limit', `${limit}`);
     }
 
-    // FIXME
+    // FIXME: add Content-Encoding header
     // res.header('Content-Encoding', 'br');
 
     const projectsCount =
@@ -144,6 +153,45 @@ class AngorRoutes {
       );
 
     res.json(projects);
+  }
+
+  private async $getProject(req: Request, res: Response): Promise<void> {
+    this.configureDefaultHeaders(res);
+
+    // FIXME: add Content-Encoding header
+    // res.header('Content-Encoding', 'br');
+
+    const { projectID } = req.params;
+
+    const project =
+      await AngorProjectRepository.$getProjectWithInvestmentsCount(projectID);
+
+    if (!project || !project.id) {
+      res.status(404).json({
+        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
+        title: 'Not Found',
+        status: 404,
+      });
+
+      return;
+    }
+
+    const payload: ProjectPayloadItem = {
+      founderKey: project.founder_key,
+      nostrPubKey: project.npub,
+      projectIdentifier: project.id,
+      createdOnBlock: project.created_on_block,
+      trxId: project.txid,
+      totalInvestmentsCount: project.investments_count,
+    };
+
+    res.json(payload);
+  }
+
+  private configureDefaultHeaders(res: Response): void {
+    res.header('Transfer-Encoding', 'chunked');
+    res.header('Vary', 'Accept-Encoding');
+    res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
   }
 }
 
