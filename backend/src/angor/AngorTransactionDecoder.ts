@@ -4,7 +4,9 @@ import * as tinySecp256k1 from 'tiny-secp256k1';
 import BIP32Factory from 'bip32';
 import crypto from 'crypto';
 import { bech32 } from 'bech32';
-import AngorProjectRepository from '../repositories/AngorProjectRepository';
+import AngorProjectRepository, {
+  Project,
+} from '../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../repositories/AngorInvestmentRepository';
 
 /**
@@ -54,7 +56,8 @@ export class AngorTransactionDecoder {
    * @param transactionStatus - status of the transaction.
    */
   public async decodeAndStoreProjectCreationTransaction(
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    createdOnBlock?: number
   ): Promise<void> {
     this.validateProjectCreationTransaction();
 
@@ -66,13 +69,17 @@ export class AngorTransactionDecoder {
     const projectId = this.getProjectId(projectIdDerivation);
     const nostrPubKey = this.getNostrPubKey();
     const addressOnFeeOutput = this.getAddressOnFeeOutput();
+    const txid = this.transaction.getId();
 
     // Store Angor project in the DB.
     await this.storeProjectInfo(
       projectId,
       nostrPubKey,
       addressOnFeeOutput,
-      transactionStatus
+      transactionStatus,
+      founderKeyHex,
+      txid,
+      createdOnBlock
     );
 
     // If transaction is confirmed (in the block), update statuses
@@ -173,11 +180,12 @@ export class AngorTransactionDecoder {
    * @param address - address on fee output.
    * @returns - promise that resolves into an array of Angor projects.
    */
-  private async getProject(address): Promise<any> {
-    const project = await AngorProjectRepository.$getProject(address);
+  private async getProject(address): Promise<Project | undefined> {
+    const project =
+      await AngorProjectRepository.$getProjectByAddressOnFeeOutput(address);
 
-    if (project.length) {
-      return project[0];
+    if (project) {
+      return project;
     }
 
     return undefined;
@@ -369,13 +377,19 @@ export class AngorTransactionDecoder {
     projectId: string,
     nostrPubKey: string,
     addressOnFeeOutput: string,
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    founderKey: string,
+    txid: string,
+    createdOnBlock?: number
   ): Promise<void> {
     await AngorProjectRepository.$setProject(
       projectId,
       nostrPubKey,
       addressOnFeeOutput,
-      transactionStatus
+      transactionStatus,
+      founderKey,
+      txid,
+      createdOnBlock
     );
   }
 

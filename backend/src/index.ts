@@ -45,6 +45,7 @@ import bitcoinCoreRoutes from './api/bitcoin/bitcoin-core.routes';
 import bitcoinSecondClient from './api/bitcoin/bitcoin-second-client';
 import accelerationRoutes from './api/acceleration/acceleration.routes';
 import aboutRoutes from './api/about.routes';
+import angorRoutes from './api/angor/angor.routes';
 import mempoolBlocks from './api/mempool-blocks';
 
 class Server {
@@ -333,6 +334,10 @@ class Server {
     if (config.MEMPOOL_SERVICES.ACCELERATIONS) {
       accelerationRoutes.initRoutes(this.app);
     }
+    if (config.DATABASE.ENABLED) {
+      angorRoutes.initRoutes(this.app);
+    }
+
     aboutRoutes.initRoutes(this.app);
   }
 
