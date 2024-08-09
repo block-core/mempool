@@ -18,6 +18,11 @@ interface ProjectPayloadItem {
   totalInvestmentsCount: number;
 }
 
+interface ProjectStatsPayloadItem {
+  investorCount: number;
+  amountInvested: number;
+}
+
 class AngorRoutes {
   public initRoutes(app: Application): void {
     app.get(
@@ -27,6 +32,10 @@ class AngorRoutes {
     app.get(
       config.MEMPOOL.API_URL_PREFIX + 'query/Angor/projects/:projectID',
       this.$getProject.bind(this)
+    );
+    app.get(
+      config.MEMPOOL.API_URL_PREFIX + 'query/Angor/projects/:projectID/stats',
+      this.$getProjectStats.bind(this)
     );
   }
 
@@ -167,11 +176,7 @@ class AngorRoutes {
       await AngorProjectRepository.$getProjectWithInvestmentsCount(projectID);
 
     if (!project || !project.id) {
-      res.status(404).json({
-        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
-        title: 'Not Found',
-        status: 404,
-      });
+      this.responseWithNotFoundStatus(res);
 
       return;
     }
@@ -188,10 +193,45 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  private async $getProjectStats(req: Request, res: Response): Promise<void> {
+    this.configureDefaultHeaders(res);
+
+    // FIXME: add Content-Encoding header
+    // res.header('Content-Encoding', 'br');
+
+    const { projectID } = req.params;
+
+    const projectStats = await AngorProjectRepository.$getProjectStats(
+      projectID
+    );
+
+    if (!projectStats || !projectStats.id) {
+      this.responseWithNotFoundStatus(res);
+
+      return;
+    }
+
+    const payload: ProjectStatsPayloadItem = {
+      investorCount: projectStats.investor_count,
+      amountInvested: parseInt(projectStats.amount_invested) || 0,
+    };
+
+    res.json(payload);
+  }
+
   private configureDefaultHeaders(res: Response): void {
     res.header('Transfer-Encoding', 'chunked');
     res.header('Vary', 'Accept-Encoding');
     res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
+  }
+
+  private responseWithNotFoundStatus(res: Response): void {
+    // TODO: discuss "traceId" in error object
+    res.status(404).json({
+      type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
+      title: 'Not Found',
+      status: 404,
+    });
   }
 }
 

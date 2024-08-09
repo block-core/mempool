@@ -14,6 +14,12 @@ interface ProjectWithInvestmentsCount extends Project {
   investments_count: number;
 }
 
+interface ProjectStats {
+  id: string | null;
+  amount_invested: string;
+  investor_count: number;
+}
+
 /**
  * Angor project repository.
  */
@@ -79,7 +85,7 @@ class AngorProjectRepository {
       return rows[0];
     } catch (e: any) {
       logger.err(
-        `Cannot save Angor project into db. Reason: ` +
+        `Cannot get Angor project by address on fee output from db. Reason: ` +
           (e instanceof Error ? e.message : e)
       );
 
@@ -109,7 +115,32 @@ class AngorProjectRepository {
       return rows[0];
     } catch (e: any) {
       logger.err(
-        `Cannot save Angor project into db. Reason: ` +
+        `Cannot get Angor project with investments count from db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getProjectStats(id: string): Promise<ProjectStats> {
+    try {
+      const query = `SELECT
+            angor_projects.id,
+            SUM(amount_sats)  AS amount_invested,
+            COUNT(angor_investments.txid) AS investor_count
+          FROM angor_projects
+          LEFT JOIN angor_investments
+            ON angor_projects.address_on_fee_output = angor_investments.address_on_fee_output
+          WHERE angor_projects.id = '${id}'
+        `;
+
+      const [rows] = await DB.query(query);
+
+      return rows[0];
+    } catch (e: any) {
+      logger.err(
+        `Cannot get Angor project stats from db. Reason: ` +
           (e instanceof Error ? e.message : e)
       );
 
@@ -143,7 +174,7 @@ class AngorProjectRepository {
       return rows as Project[];
     } catch (e: any) {
       logger.err(
-        `Cannot save Angor project into db. Reason: ` +
+        `Cannot get Angor projects from db. Reason: ` +
           (e instanceof Error ? e.message : e)
       );
 
@@ -164,7 +195,7 @@ class AngorProjectRepository {
       return count;
     } catch (e: any) {
       logger.err(
-        `Cannot save Angor project into db. Reason: ` +
+        `Cannot get confirmed Angor projects count from db. Reason: ` +
           (e instanceof Error ? e.message : e)
       );
 
