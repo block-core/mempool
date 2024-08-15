@@ -270,7 +270,8 @@ class Indexer {
             // try to decode and store it as Angor investment transaction.
             await angorDecoder
               .decodeAndStoreInvestmentTransaction(
-                AngorTransactionStatus.Confirmed
+                AngorTransactionStatus.Confirmed,
+                indexedBlock.height
               )
               .catch(() => {
                 // Ignore the error.

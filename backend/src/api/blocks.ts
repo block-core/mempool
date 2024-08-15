@@ -962,7 +962,8 @@ class Blocks {
             .catch(async () => {
               await angorDecoder
                 .decodeAndStoreInvestmentTransaction(
-                  AngorTransactionStatus.Confirmed
+                  AngorTransactionStatus.Confirmed,
+                  blockExtended.height
                 )
                 .catch(() => {
                   // Ignore error.

@@ -17,7 +17,10 @@ class AngorInvestmentRepository {
     txid: string,
     amount: number,
     addressOnFeeOutput: string,
-    transactionStatus: AngorTransactionStatus
+    transactionStatus: AngorTransactionStatus,
+    investorPubKey: string,
+    secretHash?: string,
+    createdOnBlock?: number
   ): Promise<void> {
     try {
       const query = `INSERT INTO angor_investments
@@ -25,9 +28,17 @@ class AngorInvestmentRepository {
             txid,
             amount_sats,
             address_on_fee_output,
-            transaction_status
+            transaction_status,
+            investor_npub,
+            secret_hash,
+            is_seeder
+            ${createdOnBlock ? ', created_on_block' : ''}
           )
-          VALUES ('${txid}', '${amount}', '${addressOnFeeOutput}', '${transactionStatus}')
+          VALUES ('${txid}', '${amount}', '${addressOnFeeOutput}', '${transactionStatus}', '${investorPubKey}', '${
+            secretHash || ''
+          }', ${secretHash ? 'TRUE' : 'FALSE'}${
+            createdOnBlock ? `, '${createdOnBlock}'` : ''
+          })
           ON DUPLICATE KEY UPDATE
             transaction_status = '${transactionStatus}'
         `;
@@ -61,6 +72,27 @@ class AngorInvestmentRepository {
         `;
 
       await DB.query(query);
+    } catch (e: any) {
+      logger.err(
+        `Cannot delete Angor investments from db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getConfirmedInvestmentsCount(): Promise<number> {
+    try {
+      const query = `SELECT COUNT(*) AS count
+          FROM angor_investments
+          WHERE transaction_status = '${AngorTransactionStatus.Confirmed}'
+        `;
+
+      const [rows] = await DB.query(query);
+      const count = rows[0].count || 0;
+
+      return count;
     } catch (e: any) {
       logger.err(
         `Cannot delete Angor investments from db. Reason: ` +

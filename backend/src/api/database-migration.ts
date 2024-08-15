@@ -1278,6 +1278,10 @@ class DatabaseMigration {
       amount_sats BIGINT NOT NULL,
       address_on_fee_output CHAR(51) NOT NULL,
       transaction_status VARCHAR(13) NOT NULL,
+      created_on_block INT(10),
+      investor_npub CHAR(66) NOT NULL,
+      secret_hash CHAR(34) NOT NULL,
+      is_seeder BOOLEAN NOT NULL,
       PRIMARY KEY (txid)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
   }

@@ -20,6 +20,15 @@ interface ProjectStats {
   investor_count: number;
 }
 
+interface ProjectInvestments {
+  id: string | null;
+  amount_sats: number;
+  transaction_id: string;
+  investor_npub: string;
+  secret_hash: string;
+  is_seeder: boolean;
+}
+
 /**
  * Angor project repository.
  */
@@ -138,6 +147,67 @@ class AngorProjectRepository {
       const [rows] = await DB.query(query);
 
       return rows[0];
+    } catch (e: any) {
+      logger.err(
+        `Cannot get Angor project stats from db. Reason: ` +
+          (e instanceof Error ? e.message : e)
+      );
+
+      throw e;
+    }
+  }
+
+  public async $getProjectInvestments(
+    id: string,
+    limit?: number,
+    offset?: number
+  ): Promise<ProjectInvestments[]> {
+    const order =
+      limit === undefined
+        ? 'ASC'
+        : limit !== undefined && offset !== undefined
+        ? 'ASC'
+        : 'DESC';
+    const maxLimit = 50;
+    const returnInReversedOrder =
+      limit === undefined ? false : offset === undefined ? true : false;
+
+    if (limit === undefined) {
+      limit = 10;
+    } else if (limit > maxLimit) {
+      limit = maxLimit;
+    }
+
+    try {
+      const query = `SELECT
+            angor_projects.id,
+            amount_sats,
+            investor_npub,
+            secret_hash,
+            is_seeder,
+            angor_investments.txid AS transaction_id
+          FROM angor_projects
+          LEFT JOIN angor_investments
+            ON angor_projects.address_on_fee_output = angor_investments.address_on_fee_output
+          WHERE angor_projects.id = '${id}'
+          ORDER BY angor_investments.created_on_block ${order}
+          LIMIT ${limit}
+          ${offset ? `OFFSET ${offset}` : ''}
+        `;
+
+      const [rows] = await DB.query(query);
+
+      let investments = rows as ProjectInvestments[];
+      investments = investments.map((investment) => ({
+        ...investment,
+        is_seeder: !!investment.is_seeder,
+      }));
+
+      if (returnInReversedOrder) {
+        investments = investments.reverse();
+      }
+
+      return investments;
     } catch (e: any) {
       logger.err(
         `Cannot get Angor project stats from db. Reason: ` +
