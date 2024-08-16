@@ -55,6 +55,11 @@ class AngorRoutes {
         'query/Angor/projects/:projectID/investments',
       this.$getProjectInvestments.bind(this)
     );
+    app.get(
+      config.MEMPOOL.API_URL_PREFIX +
+        'query/Angor/projects/:projectID/investments/:investorPublicKey',
+      this.getProjectInvestment.bind(this)
+    );
   }
 
   private async $getProjects(req: Request, res: Response): Promise<void> {
@@ -65,26 +70,17 @@ class AngorRoutes {
 
     const { limit: queryLimit, offset: queryOffset } = req.query;
 
-    const responseWithError = (error: { [key: string]: string[] }): void => {
-      res.status(400).json({
-        errors: error,
-        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
-        title: 'One or more validation errors occurred.',
-        status: 400,
-      });
-    };
-
     if (typeof queryLimit === 'string') {
       limit = parseInt(queryLimit);
 
       if (Number.isNaN(limit)) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: [`The value '${queryLimit}' is not valid.`],
         });
 
         return;
       } else if (limit < 1 || limit > 50) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: ['The field limit must be between 1 and 50.'],
         });
 
@@ -96,13 +92,13 @@ class AngorRoutes {
       offset = parseInt(queryOffset);
 
       if (Number.isNaN(offset)) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
       } else if (offset < 0) {
-        responseWithError({
+        this.responseWithError(res, {
           offset: [
             'The field offset must be between 0 and 9.223372036854776E+18.',
           ],
@@ -142,7 +138,7 @@ class AngorRoutes {
 
     const { path } = req.route;
 
-    this.setPaginationAndLinkHeaders(res, limit, path, projectsCount);
+    this.setPaginationAndLinkHeaders(res, limit, offset, path, projectsCount);
 
     res.json(payload);
   }
@@ -209,26 +205,17 @@ class AngorRoutes {
 
     const { limit: queryLimit, offset: queryOffset } = req.query;
 
-    const responseWithError = (error: { [key: string]: string[] }): void => {
-      res.status(400).json({
-        errors: error,
-        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
-        title: 'One or more validation errors occurred.',
-        status: 400,
-      });
-    };
-
     if (typeof queryLimit === 'string') {
       limit = parseInt(queryLimit);
 
       if (Number.isNaN(limit)) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: [`The value '${queryLimit}' is not valid.`],
         });
 
         return;
       } else if (limit < 1 || limit > 50) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: ['The field limit must be between 1 and 50.'],
         });
 
@@ -240,13 +227,13 @@ class AngorRoutes {
       offset = parseInt(queryOffset);
 
       if (Number.isNaN(offset)) {
-        responseWithError({
+        this.responseWithError(res, {
           limit: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
       } else if (offset < 0) {
-        responseWithError({
+        this.responseWithError(res, {
           offset: [
             'The field offset must be between 0 and 9.223372036854776E+18.',
           ],
@@ -278,7 +265,47 @@ class AngorRoutes {
 
     const path = req.route.path.replace(':projectID', projectID);
 
-    this.setPaginationAndLinkHeaders(res, limit, path, investmentsCount);
+    this.setPaginationAndLinkHeaders(
+      res,
+      limit,
+      offset,
+      path,
+      investmentsCount
+    );
+
+    res.json(payload);
+  }
+
+  private async getProjectInvestment(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    this.configureDefaultHeaders(res);
+
+    const { projectID, investorPublicKey } = req.params;
+
+    const projectInvestment = (
+      await AngorProjectRepository.$getProjectInvestments(
+        projectID,
+        undefined,
+        undefined,
+        investorPublicKey
+      )
+    )[0];
+
+    if (!projectInvestment) {
+      res.status(204).send();
+
+      return;
+    }
+
+    const payload: ProjectInvestmentPayloadItem = {
+      investorPublicKey: projectInvestment.investor_npub,
+      totalAmount: projectInvestment.amount_sats,
+      transactionId: projectInvestment.transaction_id,
+      hashOfSecret: projectInvestment.secret_hash,
+      isSeeder: projectInvestment.is_seeder,
+    };
 
     res.json(payload);
   }
@@ -292,6 +319,7 @@ class AngorRoutes {
   private setPaginationAndLinkHeaders(
     res: Response,
     limit = 10,
+    offset = 0,
     path: string,
     rowsCount: number
   ): void {
@@ -324,8 +352,10 @@ class AngorRoutes {
       link += '>; rel="next"';
     }
 
-    res.header('Pagination-Total', `${rowsCount}`);
     res.header('Link', link);
+    res.header('Pagination-Total', `${rowsCount}`);
+    res.header('Pagination-Limit', `${limit}`);
+    res.header('Pagination-Offset', `${offset}`);
   }
 
   private responseWithNotFoundStatus(res: Response): void {
@@ -334,6 +364,18 @@ class AngorRoutes {
       type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
       title: 'Not Found',
       status: 404,
+    });
+  }
+
+  private responseWithError(
+    res: Response,
+    error: { [key: string]: string[] }
+  ): void {
+    res.status(400).json({
+      errors: error,
+      type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+      title: 'One or more validation errors occurred.',
+      status: 400,
     });
   }
 }

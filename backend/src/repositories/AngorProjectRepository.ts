@@ -20,7 +20,7 @@ interface ProjectStats {
   investor_count: number;
 }
 
-interface ProjectInvestments {
+interface ProjectInvestment {
   id: string | null;
   amount_sats: number;
   transaction_id: string;
@@ -160,8 +160,9 @@ class AngorProjectRepository {
   public async $getProjectInvestments(
     id: string,
     limit?: number,
-    offset?: number
-  ): Promise<ProjectInvestments[]> {
+    offset?: number,
+    investorPubKey?: string
+  ): Promise<ProjectInvestment[]> {
     const order =
       limit === undefined
         ? 'ASC'
@@ -190,6 +191,11 @@ class AngorProjectRepository {
           LEFT JOIN angor_investments
             ON angor_projects.address_on_fee_output = angor_investments.address_on_fee_output
           WHERE angor_projects.id = '${id}'
+          ${
+            investorPubKey
+              ? `AND angor_investments.investor_npub = '${investorPubKey}'`
+              : ''
+          }
           ORDER BY angor_investments.created_on_block ${order}
           LIMIT ${limit}
           ${offset ? `OFFSET ${offset}` : ''}
@@ -197,7 +203,7 @@ class AngorProjectRepository {
 
       const [rows] = await DB.query(query);
 
-      let investments = rows as ProjectInvestments[];
+      let investments = rows as ProjectInvestment[];
       investments = investments.map((investment) => ({
         ...investment,
         is_seeder: !!investment.is_seeder,
