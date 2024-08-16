@@ -54,6 +54,7 @@ export class AngorTransactionDecoder {
    * Decode and store transaction as Angor project creation transaction.
    * If transaction is not an Angor project creation transaction, an error will be thrown.
    * @param transactionStatus - status of the transaction.
+   * @param createdOnBlock - block height(optional).
    */
   public async decodeAndStoreProjectCreationTransaction(
     transactionStatus: AngorTransactionStatus,
@@ -96,6 +97,7 @@ export class AngorTransactionDecoder {
    * Decode and store transaction as Angor investment transaction.
    * If transaction is not an Angor investment transaction, an error will be thrown.
    * @param transactionStatus - status of the transaction.
+   * @param createdOnBlock - block height(optional).
    */
   public async decodeAndStoreInvestmentTransaction(
     transactionStatus: AngorTransactionStatus,
@@ -185,7 +187,7 @@ export class AngorTransactionDecoder {
   /**
    * Fetches Angor project by address on fee output from the DB.
    * @param address - address on fee output.
-   * @returns - promise that resolves into an array of Angor projects.
+   * @returns - promise that resolves into Angor project or undefined.
    */
   private async getProject(address): Promise<Project | undefined> {
     const project =
@@ -199,7 +201,7 @@ export class AngorTransactionDecoder {
   }
 
   /**
-   * Decompiles (splits into chunks) OP_RETURN script.
+   * Decompiles (splits into chunks) OP_RETURN script of the project creation transaction.
    * @param transaction - an object representing bitcoin transaction.
    * @returns - an array of strings representing script chunks.
    */
@@ -247,6 +249,11 @@ export class AngorTransactionDecoder {
     return chunks;
   }
 
+  /**
+   * Decompiles (splits into chunks) OP_RETURN script of the investment transaction.
+   * @param transaction - an object representing bitcoin transaction.
+   * @returns - an array of strings representing script chunks.
+   */
   private decompileInvestmentOpReturnScript(): string[] {
     const { transaction } = this;
 

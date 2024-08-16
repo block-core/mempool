@@ -37,6 +37,10 @@ interface ProjectInvestmentPayloadItem {
 }
 
 class AngorRoutes {
+  /**
+   * Initialise Angor routes
+   * @param app - ExpressJS application object.
+   */
   public initRoutes(app: Application): void {
     app.get(
       config.MEMPOOL.API_URL_PREFIX + 'query/Angor/projects',
@@ -62,25 +66,35 @@ class AngorRoutes {
     );
   }
 
+  /**
+   * Provides Angor projects.
+   * @param req - request object.
+   * @param res - response object.
+   * @returns - promise that resolves with void.
+   */
   private async $getProjects(req: Request, res: Response): Promise<void> {
     this.configureDefaultHeaders(res);
 
+    // Default limit and offset.
     let limit = 10;
     let offset = 0;
 
+    // Limit and offset query params.
     const { limit: queryLimit, offset: queryOffset } = req.query;
 
     if (typeof queryLimit === 'string') {
+      // Convert query param into number.
       limit = parseInt(queryLimit);
 
+      // Validate limit query param.
       if (Number.isNaN(limit)) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: [`The value '${queryLimit}' is not valid.`],
         });
 
         return;
       } else if (limit < 1 || limit > 50) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: ['The field limit must be between 1 and 50.'],
         });
 
@@ -89,16 +103,18 @@ class AngorRoutes {
     }
 
     if (typeof queryOffset === 'string') {
+      // Convert query param into number.
       offset = parseInt(queryOffset);
 
+      // Validate offset query param.
       if (Number.isNaN(offset)) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
       } else if (offset < 0) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           offset: [
             'The field offset must be between 0 and 9.223372036854776E+18.',
           ],
@@ -108,18 +124,10 @@ class AngorRoutes {
       }
     }
 
-    res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Expose-Headers', '*');
-
-    if (offset !== undefined) {
-      res.header('Pagination-Offset', `${offset}`);
-    }
-    if (limit !== undefined) {
-      res.header('Pagination-Limit', `${limit}`);
-    }
-
+    // Angor projects.
     const projects = await AngorProjectRepository.$getProjects(limit, offset);
 
+    // Adjust DB data to confirm ProjectsPayloadItem interface and sort based ob block height.
     const payload: ProjectsPayloadItem[] = projects
       .map((project) => ({
         founderKey: project.founder_key,
@@ -133,6 +141,7 @@ class AngorRoutes {
           p1.createdOnBlock - p2.createdOnBlock
       );
 
+    // Amount of confirmed Angor projects.
     const projectsCount =
       await AngorProjectRepository.$getConfirmedProjectsCount();
 
@@ -143,20 +152,30 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  /**
+   * Provides Angor projects.
+   * @param req - request object.
+   * @param res - response object.
+   * @returns - promise that resolves with void.
+   */
   private async $getProject(req: Request, res: Response): Promise<void> {
     this.configureDefaultHeaders(res);
 
+    // Angor project id query params.
     const { projectID } = req.params;
 
+    // Angor project.
     const project =
       await AngorProjectRepository.$getProjectWithInvestmentsCount(projectID);
 
+    // Validate project object.
     if (!project || !project.id) {
       this.responseWithNotFoundStatus(res);
 
       return;
     }
 
+    // Adjust DB data to confirm ProjectsPayloadItem interface.
     const payload: ProjectPayloadItem = {
       founderKey: project.founder_key,
       nostrPubKey: project.npub,
@@ -169,21 +188,31 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  /**
+   * Provides Angor projects.
+   * @param req - request object.
+   * @param res - response object.
+   * @returns - promise that resolves with void.
+   */
   private async $getProjectStats(req: Request, res: Response): Promise<void> {
     this.configureDefaultHeaders(res);
 
+    // Angor project id query params.
     const { projectID } = req.params;
 
+    // Angor project statistics.
     const projectStats = await AngorProjectRepository.$getProjectStats(
       projectID
     );
 
+    // Validate project statistics object.
     if (!projectStats || !projectStats.id) {
       this.responseWithNotFoundStatus(res);
 
       return;
     }
 
+    // Adjust DB data to confirm ProjectStatsPayloadItem interface.
     const payload: ProjectStatsPayloadItem = {
       investorCount: projectStats.investor_count,
       amountInvested: parseInt(projectStats.amount_invested) || 0,
@@ -192,12 +221,19 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  /**
+   * Provides Angor projects.
+   * @param req - request object.
+   * @param res - response object.
+   * @returns - promise that resolves with void.
+   */
   private async $getProjectInvestments(
     req: Request,
     res: Response
   ): Promise<void> {
     this.configureDefaultHeaders(res);
 
+    // Angor project ID query params.
     const { projectID } = req.params;
 
     let limit: number | undefined;
@@ -206,16 +242,18 @@ class AngorRoutes {
     const { limit: queryLimit, offset: queryOffset } = req.query;
 
     if (typeof queryLimit === 'string') {
+      // Convert query param into number.
       limit = parseInt(queryLimit);
 
+      // Validate limit query param.
       if (Number.isNaN(limit)) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: [`The value '${queryLimit}' is not valid.`],
         });
 
         return;
       } else if (limit < 1 || limit > 50) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: ['The field limit must be between 1 and 50.'],
         });
 
@@ -224,16 +262,18 @@ class AngorRoutes {
     }
 
     if (typeof queryOffset === 'string') {
+      // Convert query param into number.
       offset = parseInt(queryOffset);
 
+      // Validate offset query param.
       if (Number.isNaN(offset)) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           limit: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
       } else if (offset < 0) {
-        this.responseWithError(res, {
+        this.responseWithValidationError(res, {
           offset: [
             'The field offset must be between 0 and 9.223372036854776E+18.',
           ],
@@ -243,6 +283,7 @@ class AngorRoutes {
       }
     }
 
+    // Angor project investments.
     const projectInvestments =
       await AngorProjectRepository.$getProjectInvestments(
         projectID,
@@ -250,6 +291,7 @@ class AngorRoutes {
         offset
       );
 
+    // Adjust DB data to confirm ProjectInvestmentPayloadItem interface.
     const payload: ProjectInvestmentPayloadItem[] = projectInvestments
       .map((investment) => ({
         investorPublicKey: investment.investor_npub,
@@ -260,6 +302,7 @@ class AngorRoutes {
       }))
       .sort();
 
+    // Amount of confirmed Angor project investments.
     const investmentsCount =
       await AngorInvestmentRepository.$getConfirmedInvestmentsCount();
 
@@ -276,14 +319,22 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  /**
+   * Provides Angor projects.
+   * @param req - request object.
+   * @param res - response object.
+   * @returns - promise that resolves with void.
+   */
   private async getProjectInvestment(
     req: Request,
     res: Response
   ): Promise<void> {
     this.configureDefaultHeaders(res);
 
+    // Project ID and investor nostr public key.
     const { projectID, investorPublicKey } = req.params;
 
+    // Angor project investment.
     const projectInvestment = (
       await AngorProjectRepository.$getProjectInvestments(
         projectID,
@@ -293,12 +344,14 @@ class AngorRoutes {
       )
     )[0];
 
+    // Respond with status code 204 if no Angor project investment.
     if (!projectInvestment) {
       res.status(204).send();
 
       return;
     }
 
+    // Adjust DB data to confirm ProjectInvestmentPayloadItem interface.
     const payload: ProjectInvestmentPayloadItem = {
       investorPublicKey: projectInvestment.investor_npub,
       totalAmount: projectInvestment.amount_sats,
@@ -310,12 +363,24 @@ class AngorRoutes {
     res.json(payload);
   }
 
+  /**
+   * Configures default headers that each response should have.
+   * @param res - response object.
+   */
   private configureDefaultHeaders(res: Response): void {
     res.header('Transfer-Encoding', 'chunked');
     res.header('Vary', 'Accept-Encoding');
     res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
   }
 
+  /**
+   * Sets pagination and link headers.
+   * @param res - response object.
+   * @param limit - pagination limit.
+   * @param offset - pagination offset.
+   * @param path - route path.
+   * @param rowsCount - amount of the pagination items.
+   */
   private setPaginationAndLinkHeaders(
     res: Response,
     limit = 10,
@@ -325,17 +390,20 @@ class AngorRoutes {
   ): void {
     let link = '<';
 
+    // 1st pagination chunk.
     const firstChunk = path + `?offset=${0}&limit=${limit}`;
 
     link += firstChunk;
     link += '>; rel="first"';
 
+    // Last pagination chunk.
     const lastChunk = path + `?offset=${rowsCount - limit}&limit=${limit}`;
 
     link += ', <';
     link += lastChunk;
     link += '>; rel="last"';
 
+    // Check and add previous pagination chunk.
     if (rowsCount - limit > -1) {
       const previousChunk = path + `?offset=${limit}&limit=${limit}`;
 
@@ -344,6 +412,7 @@ class AngorRoutes {
       link += '>; rel="previous"';
     }
 
+    // Check and add next pagination chunk.
     if (rowsCount - (limit + 10) > -1) {
       const nextChunk = path + `?offset=${limit + 10}&limit=${limit}`;
 
@@ -356,8 +425,14 @@ class AngorRoutes {
     res.header('Pagination-Total', `${rowsCount}`);
     res.header('Pagination-Limit', `${limit}`);
     res.header('Pagination-Offset', `${offset}`);
+    res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Expose-Headers', '*');
   }
 
+  /**
+   * Sets 404 status code and sends error object.
+   * @param res
+   */
   private responseWithNotFoundStatus(res: Response): void {
     // TODO: discuss "traceId" in error object
     res.status(404).json({
@@ -367,7 +442,12 @@ class AngorRoutes {
     });
   }
 
-  private responseWithError(
+  /**
+   * Sets 400 status code and sends error object.
+   * @param res - response object.
+   * @param error - error object.
+   */
+  private responseWithValidationError(
     res: Response,
     error: { [key: string]: string[] }
   ): void {
