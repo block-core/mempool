@@ -12,6 +12,9 @@ class AngorInvestmentRepository {
    * @param amount - transaction amount.
    * @param addressOnFeeOutput - address on fee output.
    * @param transactionStatus - transaction status.
+   * @param investorPubKey - investor nostr pubkey.
+   * @param secretHash - hash of secret.
+   * @param createdOnBlock - block height.
    */
   public async $setInvestment(
     txid: string,
@@ -82,6 +85,10 @@ class AngorInvestmentRepository {
     }
   }
 
+  /**
+   * Provides an amount of confirmed Angor investments.
+   * @returns - promise that resolves into number.
+   */
   public async $getConfirmedInvestmentsCount(): Promise<number> {
     try {
       const query = `SELECT COUNT(*) AS count

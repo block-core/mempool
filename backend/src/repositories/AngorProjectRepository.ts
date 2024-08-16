@@ -39,6 +39,9 @@ class AngorProjectRepository {
    * @param npub - project Nostr public key.
    * @param addressOnFeeOutput - address on fee output.
    * @param transactionStatus - transaction status.
+   * @param founderKey - founder nostr pubkey.
+   * @param txid - transaction ID.
+   * @param createdOnBlock - block height (optional).
    */
   public async $setProject(
     id: string,
@@ -102,6 +105,11 @@ class AngorProjectRepository {
     }
   }
 
+  /**
+   * Provides Angor project with investments count.
+   * @param id - project ID.
+   * @returns - promise that resolves into object that confirms ProjectWithInvestmentsCount interface.
+   */
   public async $getProjectWithInvestmentsCount(
     id: string
   ): Promise<ProjectWithInvestmentsCount> {
@@ -132,6 +140,11 @@ class AngorProjectRepository {
     }
   }
 
+  /**
+   * Provides Angor project statistics.
+   * @param id - project ID.
+   * @returns - promise that resolves into object that confirms ProjectStats interface.
+   */
   public async $getProjectStats(id: string): Promise<ProjectStats> {
     try {
       const query = `SELECT
@@ -157,6 +170,14 @@ class AngorProjectRepository {
     }
   }
 
+  /**
+   * Provides Angor project investments.
+   * @param id - project ID.
+   * @param limit - maximum amount of items to return (not more than 50).
+   * @param offset - selection offset.
+   * @param investorPubKey - investor nostr pubkey.
+   * @returns - promise that resolves into an array of objects that confirm ProjectInvestment interface.
+   */
   public async $getProjectInvestments(
     id: string,
     limit?: number,
@@ -206,6 +227,7 @@ class AngorProjectRepository {
       let investments = rows as ProjectInvestment[];
       investments = investments.map((investment) => ({
         ...investment,
+        // convert DB boolean representation (0 and 1) into JS boolean
         is_seeder: !!investment.is_seeder,
       }));
 
@@ -224,6 +246,12 @@ class AngorProjectRepository {
     }
   }
 
+  /**
+   * Provides Angor projects.
+   * @param limit - maximum amount of items to return (not more than 50).
+   * @param offset - selection offset.
+   * @returns - promise that resolves into an array of objects that confirm Project interface.
+   */
   public async $getProjects(limit = 10, offset?: number): Promise<Project[]> {
     const maxLimit = 50;
 
@@ -258,6 +286,10 @@ class AngorProjectRepository {
     }
   }
 
+  /**
+   * Provides amount of confirmed Angor projects.
+   * @returns - promise that resolves into number representing amount of confirmed projects.
+   */
   public async $getConfirmedProjectsCount(): Promise<number> {
     try {
       const query = `SELECT COUNT(*) AS count
