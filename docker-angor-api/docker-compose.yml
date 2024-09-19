@@ -5,9 +5,8 @@ volumes:
 services:
   node:
     container_name: btc-node
-    image: eugenenostrdev/bitcoin_signet:latest
+    image: eugenenostrdev/bitcoin_signet:amd64
     mem_limit: 2048m
-    platform: "linux/amd64"
     cpus: 0.8
     healthcheck:
       test: ["CMD", "bitcoin-cli", "ping"]
@@ -42,7 +41,6 @@ services:
   mempool_api:
     container_name: mempool-api
     image: eugenenostrdev/mempool-api:latest
-    platform: "linux/amd64"
     environment:
       MEMPOOL_BACKEND: "none"
       CORE_RPC_HOST: "btc-node"
@@ -68,7 +66,6 @@ services:
 
   mempool_db:
     container_name: mempool-db
-    platform: "linux/amd64"
     environment:
       MYSQL_DATABASE: "mempool"
       MYSQL_USER: "mempool"
