@@ -40,7 +40,7 @@ services:
 
   mempool_api:
     container_name: mempool-api
-    image: eugenenostrdev/mempool-api:latest
+    image: eugenenostrdev/mempool-api:amd64
     environment:
       MEMPOOL_BACKEND: "none"
       CORE_RPC_HOST: "btc-node"
