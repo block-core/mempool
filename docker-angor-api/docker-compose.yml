@@ -1,0 +1,86 @@
+volumes:
+  blockchain:
+    name: btc-data
+
+services:
+  node:
+    container_name: btc-node
+    image: eugenenostrdev/bitcoin_signet:amd64
+    mem_limit: 2048m
+    cpus: 0.8
+    healthcheck:
+      test: ["CMD", "bitcoin-cli", "ping"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+    restart: unless-stopped
+    stop_grace_period: 15m
+    volumes:
+      - blockchain:/root/.bitcoin
+    environment:
+      UACOMMENT: $UACOMMENT
+      BLOCKPRODUCTIONDELAY: ${BLOCKPRODUCTIONDELAY:-30}
+      MINERENABLED: ${MINERENABLED:-0} # change this to 1 if this node needs to mine (however for simplicity there should only be one mining node per challenge)
+      NBITS: $NBITS
+      MINETO: ${MINETO:-tb1qk4pq0rh75qtph47wlufhyss43flhvhvwe4zt8a}
+      PRIVKEY: ${PRIVKEY:-cRz3Ci2aUNmdP4pViSM8LafwKHZmvn4X6gjeCXzVkBYBLhzA3uFC} # private key path is m/84'/1'/0'/0/0 of test wallet mnemonic "margin radio diamond leg loud street announce guitar video shiver speed eyebrow"
+      SIGNETCHALLENGE: ${SIGNETCHALLENGE:-512102b57c4413a0354bcc360a37e035f26670deda14bab613c28fbd30fe52b2deccc151ae}
+      EXTERNAL_IP: $EXTERNAL_IP
+      ADDNODE: ${ADDNODE:-207.180.254.78}
+      RPCUSER: ${RPCUSER:-rpcuser}
+      RPCPASSWORD: ${RPCPASSWORD:-rpcpassword}
+    ports:
+      - 18333:18333 # Make this a public node.
+      - 8333:8333 # Make this a public node.
+      - 38333:38333 # Make this a public node.
+      - 38332:38332
+    networks:
+      - btcnetwork
+
+  mempool_api:
+    container_name: mempool-api
+    image: eugenenostrdev/mempool-api:amd64
+    environment:
+      MEMPOOL_BACKEND: "none"
+      CORE_RPC_HOST: "btc-node"
+      CORE_RPC_PORT: "38332"
+      CORE_RPC_USERNAME: "rpcuser"
+      CORE_RPC_PASSWORD: "rpcpassword"
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: "mempool-db"
+      DATABASE_DATABASE: "mempool"
+      DATABASE_USERNAME: "mempool"
+      DATABASE_PASSWORD: "mempool"
+      STATISTICS_ENABLED: "true"
+    user: "1000:1000"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
+    ports:
+      - 8999:8999
+    volumes:
+      - ./data:/backend/cache
+    networks:
+      - btcnetwork
+
+  mempool_db:
+    container_name: mempool-db
+    environment:
+      MYSQL_DATABASE: "mempool"
+      MYSQL_USER: "mempool"
+      MYSQL_PASSWORD: "mempool"
+      MYSQL_ROOT_PASSWORD: "admin"
+    image: mariadb:10.5.21
+    user: "1000:1000"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - btcnetwork
+
+networks:
+  btcnetwork:
+    external: false
+    name: btcnetwork
