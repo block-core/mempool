@@ -1,6 +1,8 @@
+version: "2.4"
+
 volumes:
-  blockchain:
-    name: btc-data
+  mempool_blockchain:
+    name: mempool-blockchain
 
 services:
   node:
@@ -17,7 +19,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 15m
     volumes:
-      - blockchain:/root/.bitcoin
+      - mempool_blockchain:/root/.bitcoin
     environment:
       UACOMMENT: $UACOMMENT
       BLOCKPRODUCTIONDELAY: ${BLOCKPRODUCTIONDELAY:-30}
@@ -31,19 +33,19 @@ services:
       RPCUSER: ${RPCUSER:-rpcuser}
       RPCPASSWORD: ${RPCPASSWORD:-rpcpassword}
     ports:
-      - 18333:18333 # Make this a public node.
-      - 8333:8333 # Make this a public node.
-      - 38333:38333 # Make this a public node.
-      - 38332:38332
+      - 18330:18333 # Make this a public node.
+      - 8330:8333 # Make this a public node.
+      - 38330:38333 # Make this a public node.
+      - 38335:38332
     networks:
-      - btcnetwork
+      - mempoolnetwork
 
   mempool_api:
     container_name: mempool-api
     image: eugenenostrdev/mempool-api:amd64
     environment:
       MEMPOOL_BACKEND: "none"
-      CORE_RPC_HOST: "btc-node"
+      CORE_RPC_HOST: "node"
       CORE_RPC_PORT: "38332"
       CORE_RPC_USERNAME: "rpcuser"
       CORE_RPC_PASSWORD: "rpcpassword"
@@ -53,7 +55,13 @@ services:
       DATABASE_USERNAME: "mempool"
       DATABASE_PASSWORD: "mempool"
       STATISTICS_ENABLED: "true"
-    user: "1000:1000"
+      VIRTUAL_HOST: mempool.thedude.pro
+      VIRTUAL_PORT: 8999
+      VIRTUAL_PROTO: http
+      VIRTUAL_NETWORK: proxy
+      LETSENCRYPT_HOST: mempool.thedude.pro
+      LETSENCRYPT_EMAIL: admin@blockcore.net
+      ASPNETCORE_URLS: http://+:8999
     restart: unless-stopped
     stop_grace_period: 1m
     command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
@@ -62,7 +70,8 @@ services:
     volumes:
       - ./data:/backend/cache
     networks:
-      - btcnetwork
+      - mempoolnetwork
+      - proxy
 
   mempool_db:
     container_name: mempool-db
@@ -72,15 +81,17 @@ services:
       MYSQL_PASSWORD: "mempool"
       MYSQL_ROOT_PASSWORD: "admin"
     image: mariadb:10.5.21
-    user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
       - ./mysql/data:/var/lib/mysql
     networks:
-      - btcnetwork
+      - mempoolnetwork
 
 networks:
-  btcnetwork:
+  mempoolnetwork:
     external: false
-    name: btcnetwork
+    name: mempoolnetwork
+  proxy:
+    external: true
+    name: proxy

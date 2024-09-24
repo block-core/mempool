@@ -368,7 +368,6 @@ class AngorRoutes {
    * @param res - response object.
    */
   private configureDefaultHeaders(res: Response): void {
-    res.header('Transfer-Encoding', 'chunked');
     res.header('Vary', 'Accept-Encoding');
     res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
   }
