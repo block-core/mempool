@@ -97,7 +97,7 @@ services:
 
   mempool_electrs:
     container_name: mempool-electrs
-    image: eugenenostrdev/electrs-app
+    image: eugenenostrdev/electrs-app:amd64-1.1
     ports:
       - 5001:5001
       - 3003:3003
