@@ -1,12 +1,16 @@
 version: "2.4"
 
 volumes:
+  blockchain:
+    name: btc-data
+  memmpool_api:
+    name: btc-api
+  memmpool_indexer:
+    name: btc-db
   mempool_blockchain:
     name: mempool-blockchain
   electrs_data:
     name: electrs-data
-  esplora_socket:
-    name: esplora-socket
 
 services:
   node:
@@ -23,7 +27,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 15m
     volumes:
-      - mempool_blockchain:/root/.bitcoin
+      - blockchain:/root/.bitcoin
     environment:
       UACOMMENT: $UACOMMENT
       BLOCKPRODUCTIONDELAY: ${BLOCKPRODUCTIONDELAY:-30}
@@ -37,10 +41,10 @@ services:
       RPCUSER: ${RPCUSER:-rpcuser}
       RPCPASSWORD: ${RPCPASSWORD:-rpcpassword}
     ports:
-      - 18330:18333 # Make this a public node.
-      - 8330:8333 # Make this a public node.
-      - 38330:38333 # Make this a public node.
-      - 38335:38332
+      - 18333:18333 # Make this a public node.
+      - 8333:8333 # Make this a public node.
+      - 38333:38333 # Make this a public node.
+      - 38332:38332
     networks:
       - mempoolnetwork
 
@@ -62,20 +66,20 @@ services:
       DATABASE_USERNAME: "mempool"
       DATABASE_PASSWORD: "mempool"
       STATISTICS_ENABLED: "true"
-      VIRTUAL_HOST: mempool.thedude.pro
+      VIRTUAL_HOST: indexer.thedude.pro
       VIRTUAL_PORT: 8999
       VIRTUAL_PROTO: http
       VIRTUAL_NETWORK: proxy
-      LETSENCRYPT_HOST: mempool.thedude.pro
+      LETSENCRYPT_HOST: indexer.thedude.pro
       LETSENCRYPT_EMAIL: admin@blockcore.net
       ASPNETCORE_URLS: http://+:8999
     restart: unless-stopped
     stop_grace_period: 1m
-    command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
+    command: "./wait-for-it.sh mempool_db:3306 --timeout=720 --strict -- ./start.sh"
     ports:
       - 8999:8999
     volumes:
-      - ./data:/backend/cache
+      - memmpool_api:/backend/cache
     networks:
       - mempoolnetwork
       - proxy
@@ -91,7 +95,25 @@ services:
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - memmpool_indexer:/var/lib/mysql
+    networks:
+      - mempoolnetwork
+
+  mempool_web:
+    container_name: "mempool_web"
+    environment:
+      MAINNET_ENABLED: "false"
+      ROOT_NETWORK: "signet"
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "mempool_api"
+      LIGHTNING: "false"
+    image: mempool/frontend:latest
+    user: "0:1000"
+    restart: always
+    stop_grace_period: 1m
+    command: "./wait-for mempool_db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    ports:
+      - "8080:8080"
     networks:
       - mempoolnetwork
 
