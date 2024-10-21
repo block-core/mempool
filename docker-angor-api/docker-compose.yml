@@ -53,6 +53,7 @@ services:
     image: eugenenostrdev/mempool-api:amd64-1.1.1
     environment:
       MEMPOOL_BACKEND: "electrum"
+      ESPLORA_REST_API_URL: "http://mempool-electrs:3003"
       ELECTRUM_HOST: "mempool-electrs"
       ELECTRUM_PORT: "5001"
       ELECTRUM_TLS_ENABLED: "false"
@@ -95,7 +96,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
-      - memmpool_indexer:/var/lib/mysql
+      - ./mysql/data:/var/lib/mysql
     networks:
       - mempoolnetwork
 
@@ -130,6 +131,7 @@ services:
       /bin/electrs
     command: |
       --network signet
+      --jsonrpc-import
       --daemon-rpc-addr btc-node:38332
       --cookie "rpcuser:rpcpassword"
       --db-dir /electrs
