@@ -108,6 +108,13 @@ services:
       FRONTEND_HTTP_PORT: "8080"
       BACKEND_MAINNET_HTTP_HOST: "mempool_api"
       LIGHTNING: "false"
+      VIRTUAL_HOST: explorer.thedude.pro
+      VIRTUAL_PORT: 8080
+      VIRTUAL_PROTO: http
+      VIRTUAL_NETWORK: proxy
+      LETSENCRYPT_HOST: explorer.thedude.pro
+      LETSENCRYPT_EMAIL: admin@blockcore.net
+      ASPNETCORE_URLS: http://+:8080
     image: mempool/frontend:latest
     user: "0:1000"
     restart: always
@@ -117,6 +124,7 @@ services:
       - "8080:8080"
     networks:
       - mempoolnetwork
+      - proxy
 
   mempool_electrs:
     container_name: mempool-electrs
