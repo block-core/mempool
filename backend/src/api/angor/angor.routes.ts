@@ -2,6 +2,8 @@ import { Application, Request, Response } from 'express';
 import config from '../../config';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
+import transactionUtils from '../transaction-utils';
+import { fetchAngorVouts, computeAdvancedStats, computeStatsTally } from './angor-stats';
 
 interface ProjectsPayloadItem {
   founderKey: string;
@@ -22,10 +24,9 @@ interface ProjectPayloadItem {
 interface ProjectStatsPayloadItem {
   investorCount: number;
   amountInvested: number;
-  // TODO: implement logic to capture the following data
-  // amountSpentSoFarByFounder: number;
-  // amountInPenalties: number;
-  // countInPenalties: number;
+  amountSpentSoFarByFounder: number;
+  amountInPenalties: number;
+  countInPenalties: number;
 }
 
 interface ProjectInvestmentPayloadItem {
@@ -34,6 +35,24 @@ interface ProjectInvestmentPayloadItem {
   transactionId: string;
   hashOfSecret: string;
   isSeeder: boolean;
+}
+
+export interface AdvancedProjectStats {
+  amountSpentSoFarByFounder: number;
+  amountInPenalties: number;
+  countInPenalties: number;
+}
+
+export interface StatsTally {
+  totalAmount: number;
+  numberOfTx: number;
+}
+
+export interface AngorVout {
+  value: number;
+  spent: boolean;
+  spendingTxId: string | undefined;
+  investmentTxId: string
 }
 
 class AngorRoutes {
@@ -195,30 +214,80 @@ class AngorRoutes {
    * @returns - promise that resolves with void.
    */
   private async $getProjectStats(req: Request, res: Response): Promise<void> {
-    this.configureDefaultHeaders(res);
+    try {
+      this.configureDefaultHeaders(res);
 
-    // Angor project id query params.
-    const { projectID } = req.params;
+      // Angor project id query params.
+      const { projectID } = req.params;
 
-    // Angor project statistics.
-    const projectStats = await AngorProjectRepository.$getProjectStats(
-      projectID
-    );
+      // fetch project investments
 
-    // Validate project statistics object.
-    if (!projectStats || !projectStats.id) {
-      this.responseWithNotFoundStatus(res);
+      let advancedStats: AdvancedProjectStats = {
+        amountSpentSoFarByFounder: 0,
+        amountInPenalties: 0,
+        countInPenalties: 0
+      };
+      const investments = await AngorProjectRepository.$getProjectInvestments(projectID);
+      const filteredInvestments = investments.filter((investment) => {
+        return !!investment.transaction_id && !!investment.investor_npub && !!investment.amount_sats;
+      });
+      if (filteredInvestments.length > 0) {
+        const spentVouts: AngorVout[][] = await Promise.all(
+          investments.map(async (investment) => {
+            //fetch transaction for each investment, with full info about vouts
+            console.log('investment: ', investment);
+            const fullTr = await transactionUtils.$getTransactionExtended(
+              investment.transaction_id,
+              true,
+              false,
+              false,
+              true);
+            // fetch and extract spent status and values for each vout.
+            const voutPromises = fullTr.vout.map((v, i) => {
+              return fetchAngorVouts(v, investment, i);
+            });
+            const vouts = await Promise.all(voutPromises);
 
-      return;
+            // filter out vouts that are not spent and therefore dont have a spending transaction info
+            return vouts.filter((vout): vout is AngorVout => {
+              return vout !== undefined && vout.spent && vout.spendingTxId !== undefined;
+            });
+          }));
+
+        // iterate over each vout and accumulate required information into a tally
+        // sorted by a composite key of investment transaction id and spending transaction id.
+        const tally: Record<string, StatsTally> = computeStatsTally(spentVouts);
+
+        // Iterate over the Stats Tally and accumulate final information about investor and found
+        // spending patterns.
+        advancedStats = computeAdvancedStats(tally);
+      }
+      // Angor project statistics.
+      const projectStats = await AngorProjectRepository.$getProjectStats(
+        projectID
+      );
+
+      // Validate project statistics object.
+      if (!projectStats || !projectStats.id) {
+        this.responseWithNotFoundStatus(res);
+
+        return;
+      }
+      // Adjust DB data and calculates advanced stats to confirm ProjectStatsPayloadItem interface.
+      const payload: ProjectStatsPayloadItem = {
+        ...advancedStats,
+        investorCount: projectStats.investor_count,
+        amountInvested: parseInt(projectStats.amount_invested) || 0
+      };
+
+      res.json(payload);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred.',
+        details: error
+      });
     }
-
-    // Adjust DB data to confirm ProjectStatsPayloadItem interface.
-    const payload: ProjectStatsPayloadItem = {
-      investorCount: projectStats.investor_count,
-      amountInvested: parseInt(projectStats.amount_invested) || 0,
-    };
-
-    res.json(payload);
   }
 
   /**
@@ -368,7 +437,6 @@ class AngorRoutes {
    * @param res - response object.
    */
   private configureDefaultHeaders(res: Response): void {
-    res.header('Transfer-Encoding', 'chunked');
     res.header('Vary', 'Accept-Encoding');
     res.header('Strict-Transport-Security', `max-age=${365 * 24 * 60 * 60}`);
   }

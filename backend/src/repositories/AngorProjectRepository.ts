@@ -20,7 +20,7 @@ interface ProjectStats {
   investor_count: number;
 }
 
-interface ProjectInvestment {
+export interface ProjectInvestment {
   id: string | null;
   amount_sats: number;
   transaction_id: string;
@@ -158,6 +158,7 @@ class AngorProjectRepository {
         `;
 
       const [rows] = await DB.query(query);
+
 
       return rows[0];
     } catch (e: any) {
