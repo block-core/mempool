@@ -222,36 +222,46 @@ class AngorRoutes {
 
       // fetch project investments
 
+      let advancedStats: AdvancedProjectStats = {
+        amountSpentSoFarByFounder: 0,
+        amountInPenalties: 0,
+        countInPenalties: 0
+      };
       const investments = await AngorProjectRepository.$getProjectInvestments(projectID);
+      const filteredInvestments = investments.filter((investment) => {
+        return !!investment.transaction_id && !!investment.investor_npub && !!investment.amount_sats;
+      });
+      if (filteredInvestments.length > 0) {
+        const spentVouts: AngorVout[][] = await Promise.all(
+          investments.map(async (investment) => {
+            //fetch transaction for each investment, with full info about vouts
+            console.log('investment: ', investment);
+            const fullTr = await transactionUtils.$getTransactionExtended(
+              investment.transaction_id,
+              true,
+              false,
+              false,
+              true);
+            // fetch and extract spent status and values for each vout.
+            const voutPromises = fullTr.vout.map((v, i) => {
+              return fetchAngorVouts(v, investment, i);
+            });
+            const vouts = await Promise.all(voutPromises);
 
-      const spentVouts: AngorVout[][] = await Promise.all(
-        investments.map(async (investment) => {
-          //fetch transaction for each investment, with full info about vouts
-          const fullTr = await transactionUtils.$getTransactionExtended(
-            investment.transaction_id,
-            true,
-            false,
-            false,
-            true);
-          // fetch and extract spent status and values for each vout.
-          const voutPromises = fullTr.vout.map((v, i) => {
-            return fetchAngorVouts(v, investment, i);
-          });
-          const vouts = await Promise.all(voutPromises);
+            // filter out vouts that are not spent and therefore dont have a spending transaction info
+            return vouts.filter((vout): vout is AngorVout => {
+              return vout !== undefined && vout.spent && vout.spendingTxId !== undefined;
+            });
+          }));
 
-          // filter out vouts that are not spent and therefore dont have a spending transaction info
-          return vouts.filter((vout): vout is AngorVout => {
-            return vout !== undefined && vout.spent && vout.spendingTxId !== undefined;
-          });
-        }));
+        // iterate over each vout and accumulate required information into a tally
+        // sorted by a composite key of investment transaction id and spending transaction id.
+        const tally: Record<string, StatsTally> = computeStatsTally(spentVouts);
 
-      // iterate over each vout and accumulate required information into a tally
-      // sorted by a composite key of investment transaction id and spending transaction id.
-      const tally: Record<string, StatsTally> = computeStatsTally(spentVouts);
-
-      // Iterate over the Stats Tally and accumulate final information about investor and found
-      // spending patterns.
-      const advancedStats = computeAdvancedStats(tally);
+        // Iterate over the Stats Tally and accumulate final information about investor and found
+        // spending patterns.
+        advancedStats = computeAdvancedStats(tally);
+      }
       // Angor project statistics.
       const projectStats = await AngorProjectRepository.$getProjectStats(
         projectID
