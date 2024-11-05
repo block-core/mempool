@@ -116,6 +116,10 @@ class DatabaseMigration {
       this.getCreateAngorInvestmentsTableQuery(),
       await this.$checkIfTableExists('angor_investments')
     );
+    await this.$executeQuery(
+      this.getCreateAngorBlocksTableQuery(),
+      await this.$checkIfTableExists('angor_blocks')
+    );
     if (databaseSchemaVersion < 2 && this.statisticsAddedIndexed === false) {
       await this.$executeQuery(`CREATE INDEX added ON statistics (added);`);
       await this.updateToSchemaVersion(2);
@@ -574,7 +578,7 @@ class DatabaseMigration {
       await this.$executeQuery('ALTER TABLE `blocks_templates` ADD INDEX `version` (`version`)');
       await this.updateToSchemaVersion(67);
     }
-    
+
     if (databaseSchemaVersion < 68 && config.MEMPOOL.NETWORK === "liquid") {
       await this.$executeQuery('TRUNCATE TABLE elements_pegs');
       await this.$executeQuery('ALTER TABLE elements_pegs ADD PRIMARY KEY (txid, txindex);');
@@ -967,7 +971,7 @@ class DatabaseMigration {
       pegtxid varchar(65) NOT NULL,
       pegindex int(11) NOT NULL,
       pegblocktime int(11) unsigned NOT NULL,
-      PRIMARY KEY (txid, txindex), 
+      PRIMARY KEY (txid, txindex),
       FOREIGN KEY (bitcoinaddress) REFERENCES federation_addresses (bitcoinaddress)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
   }
@@ -1280,9 +1284,17 @@ class DatabaseMigration {
       transaction_status VARCHAR(13) NOT NULL,
       created_on_block INT(10),
       investor_npub CHAR(66) NOT NULL,
-      secret_hash CHAR(34) NOT NULL,
+      secret_hash CHAR(64) NOT NULL,
       is_seeder BOOLEAN NOT NULL,
       PRIMARY KEY (txid)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
+  }
+
+  private getCreateAngorBlocksTableQuery(): string {
+    return `CREATE TABLE IF NOT EXISTS angor_blocks (
+      block_height INT PRIMARY KEY,
+      block_hash CHAR(64) NOT NULL,
+      indexed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
   }
 
