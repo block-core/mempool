@@ -8,6 +8,7 @@ import AngorProjectRepository, {
   Project,
 } from '../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../repositories/AngorInvestmentRepository';
+import logger from "../logger";
 
 /**
  * Represents a Bitcoin network.
@@ -441,6 +442,7 @@ export class AngorTransactionDecoder {
     txid: string,
     createdOnBlock?: number
   ): Promise<void> {
+    logger.debug(`Saving Angor Project info for ${projectId} and ${txid}`);
     await AngorProjectRepository.$setProject(
       projectId,
       nostrPubKey,
@@ -468,6 +470,7 @@ export class AngorTransactionDecoder {
     secretHash?: string,
     createdOnBlock?: number
   ): Promise<void> {
+    logger.debug(`Saving Angor Investment info for from ${txid}`);
     await AngorInvestmentRepository.$setInvestment(
       txid,
       amount,

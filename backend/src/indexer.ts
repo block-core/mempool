@@ -17,6 +17,7 @@ import {
   AngorSupportedNetworks,
   AngorTransactionStatus,
 } from './angor/AngorTransactionDecoder';
+import AngorBlocksRepository from "./repositories/AngorBlocksRepository";
 
 export interface CoreIndex {
   name: string;
@@ -32,7 +33,6 @@ class Indexer {
   private tasksRunning: { [key in TaskName]?: boolean; } = {};
   private tasksScheduled: { [key in TaskName]?: NodeJS.Timeout; } = {};
   private coreIndexes: CoreIndex[] = [];
-  private initialIndexingCompleted = false;
 
   public indexerIsRunning(): boolean {
     return this.indexerRunning;
@@ -51,7 +51,7 @@ class Indexer {
         synced: indexes[indexName].synced,
         best_block_height: indexes[indexName].best_block_height,
       };
-      logger.info(`Core index '${indexName}' is ${indexes[indexName].synced ? 'synced' : 'not synced'}. Best block height is ${indexes[indexName].best_block_height}`);      
+      logger.info(`Core index '${indexName}' is ${indexes[indexName].synced ? 'synced' : 'not synced'}. Best block height is ${indexes[indexName].best_block_height}`);
       updatedCoreIndexes.push(newState);
 
       if (indexName === 'coinstatsindex' && newState.synced === true) {
@@ -67,9 +67,9 @@ class Indexer {
 
   /**
    * Return the best block height if a core index is available, or 0 if not
-   * 
-   * @param name 
-   * @returns 
+   *
+   * @param name
+   * @returns
    */
   public isCoreIndexReady(name: string): CoreIndex | null {
     for (const index of this.coreIndexes) {
@@ -204,11 +204,8 @@ class Indexer {
 
       // Index transactions related to Angor projects.
       // This operation should be done once when initial indexing is complete.
-      if (!this.initialIndexingCompleted) {
-        this.initialIndexingCompleted = true;
+      await this.indexAngorTransactions();
 
-        await this.indexAngorTransactions();
-      }
 
       blocks.$classifyBlocks();
     } catch (e) {
@@ -243,6 +240,11 @@ class Indexer {
     );
 
     for (const indexedBlock of sortedBlocks) {
+      const alreadyIndexed = await AngorBlocksRepository.isBlockIndexed(indexedBlock.height, indexedBlock.hash);
+      if (alreadyIndexed) {
+        logger.debug(`Block ${indexedBlock.height} already indexed, skipping.`);
+        continue;
+      }
       // Transaction IDs in the block.
       const transactionIds = await bitcoinApi.$getTxIdsForBlock(
         indexedBlock.hash
@@ -260,24 +262,26 @@ class Indexer {
         );
 
         // Try to decode and store transaction as Angor project creation transaction.
-        await angorDecoder
-          .decodeAndStoreProjectCreationTransaction(
-            AngorTransactionStatus.Confirmed,
-            indexedBlock.height
-          )
-          .catch(async () => {
-            // If transaction is not an Angor project creation transaction,
-            // try to decode and store it as Angor investment transaction.
+        try {
+            await angorDecoder
+              .decodeAndStoreProjectCreationTransaction(
+                AngorTransactionStatus.Confirmed,
+                indexedBlock.height
+              );
+        } catch (error) {
+          logger.debug(`Error decoding an Angor Project: ${error}. Trying to decode as investment now...`);
+          try {
             await angorDecoder
               .decodeAndStoreInvestmentTransaction(
                 AngorTransactionStatus.Confirmed,
                 indexedBlock.height
-              )
-              .catch(() => {
-                // Ignore the error.
-              });
-          });
+              );
+          } catch (error) {
+            logger.debug(`Error decoding an Angor Investment: ${error}`);
+          }
+        }
       }
+      await AngorBlocksRepository.$markBlockAsIndexed(indexedBlock.height, indexedBlock.hash);
     }
 
     logger.info('Indexing Angor transactions completed.');
