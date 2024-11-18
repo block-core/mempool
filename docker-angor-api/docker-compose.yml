@@ -71,7 +71,7 @@ services:
       VIRTUAL_PORT: 8999
       VIRTUAL_PROTO: http
       VIRTUAL_NETWORK: proxy
-      LETSENCRYPT_HOST: indexer.thedude.pro
+      LETSENCRYPT_HOST: indexer.angor.io
       LETSENCRYPT_EMAIL: admin@blockcore.net
       ASPNETCORE_URLS: http://+:8999
     restart: unless-stopped
