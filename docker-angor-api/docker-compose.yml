@@ -112,7 +112,7 @@ services:
       VIRTUAL_PORT: 8080
       VIRTUAL_PROTO: http
       VIRTUAL_NETWORK: proxy
-      LETSENCRYPT_HOST: explorer.thedude.pro
+      LETSENCRYPT_HOST: explorer.angor.io
       LETSENCRYPT_EMAIL: admin@blockcore.net
       ASPNETCORE_URLS: http://+:8080
     image: mempool/frontend:latest
