@@ -50,9 +50,9 @@ services:
 
   mempool_api:
     container_name: mempool-api
-    image: eugenenostrdev/mempool-api:amd64-1.1.1
+    image: eugenenostrdev/mempool-api:amd64-1.1.6
     environment:
-      MEMPOOL_BACKEND: "electrum"
+      MEMPOOL_BACKEND: "esplora"
       ESPLORA_REST_API_URL: "http://mempool-electrs:3003"
       ELECTRUM_HOST: "mempool-electrs"
       ELECTRUM_PORT: "5001"
@@ -67,6 +67,8 @@ services:
       DATABASE_USERNAME: "mempool"
       DATABASE_PASSWORD: "mempool"
       STATISTICS_ENABLED: "true"
+      MEMPOOL_STDOUT_LOG_MIN_PRIORITY: "debug"
+      MEMPOOL_INDEXING_BLOCKS_AMOUNT: -1
       VIRTUAL_HOST: indexer.thedude.pro
       VIRTUAL_PORT: 8999
       VIRTUAL_PROTO: http
@@ -96,7 +98,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - memmpool_indexer:/var/lib/mysql
     networks:
       - mempoolnetwork
 
