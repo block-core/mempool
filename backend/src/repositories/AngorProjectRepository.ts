@@ -250,6 +250,7 @@ class AngorProjectRepository {
   /**
    * Provides Angor projects.
    * @param limit - maximum amount of items to return (not more than 50).
+   * @param order - return items in ascending or descending order
    * @param offset - selection offset.
    * @returns - promise that resolves into an array of objects that confirm Project interface.
    */
@@ -260,7 +261,7 @@ class AngorProjectRepository {
       limit = maxLimit;
     }
 
-    const order = offset === undefined ? 'DESC' : 'ASC';
+    const order = 'DESC';
 
     try {
       const query = `SELECT id, founder_key, npub, created_on_block, txid

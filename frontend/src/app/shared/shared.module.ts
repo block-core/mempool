@@ -120,6 +120,7 @@ import { TwitterLogin } from '@components/twitter-login/twitter-login.component'
 import { BitcoinInvoiceComponent } from '@components/bitcoin-invoice/bitcoin-invoice.component';
 
 import { OnlyVsizeDirective, OnlyWeightDirective } from '@app/shared/components/weight-directives/weight-directives';
+import { AngorComponent } from "../angor/angor.component";
 
 @NgModule({
   declarations: [
@@ -236,6 +237,7 @@ import { OnlyVsizeDirective, OnlyWeightDirective } from '@app/shared/components/
     FaucetComponent,
     TwitterLogin,
     BitcoinInvoiceComponent,
+    AngorComponent
   ],
   imports: [
     CommonModule,

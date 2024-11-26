@@ -9,6 +9,7 @@ import { Conversion } from '@app/services/price.service';
 import { StorageService } from '@app/services/storage.service';
 import { WebsocketResponse } from '@interfaces/websocket.interface';
 import { TxAuditStatus } from '@components/transaction/transaction.component';
+import { AngorProject } from "@/interfaces/angor.interface";
 
 @Injectable({
   providedIn: 'root'
@@ -278,7 +279,7 @@ export class ApiService {
         return response;
       })
     );
-  }  
+  }
 
   getPoolStats$(slug: string): Observable<PoolStat> {
     return this.httpClient.get<PoolStat>(this.apiBaseUrl + this.apiBasePath + `/api/v1/mining/pool/${slug}`)
@@ -580,5 +581,14 @@ export class ApiService {
 
   getBlockSummaryLoaded(hash) {
     return this.blockSummaryLoaded[hash];
+  }
+
+  getAngorProjects$(): Observable<AngorProject[]> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('limit', '25');
+    const queryString = queryParams.toString();
+    return this.httpClient.get<AngorProject[]>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects' + queryString
+    );
   }
 }
