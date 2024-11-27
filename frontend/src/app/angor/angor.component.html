@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div class="container-xl dashboard-container">
 
-</body>
-</html>
+  <div class="row row-cols-1 row-cols-md-2">
+    <!-- Recent blocks -->
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <a class="title-link" href="" [routerLink]="['/blocks' | relativeUrl]">
+            <h5 class="card-title d-inline">Recent Blocks</h5>
+            <span>&nbsp;</span>
+            <fa-icon [icon]="['fas', 'external-link-alt']" [fixedWidth]="true" style="vertical-align: text-top; font-size: 13px; color: var(--title-fg)"></fa-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

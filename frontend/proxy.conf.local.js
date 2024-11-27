@@ -4,7 +4,7 @@ const FRONTEND_CONFIG_FILE_NAME = 'mempool-frontend-config.json';
 
 let configContent;
 
-// Read frontend config 
+// Read frontend config
 try {
     const rawConfig = fs.readFileSync(FRONTEND_CONFIG_FILE_NAME);
     configContent = JSON.parse(rawConfig);
@@ -35,7 +35,7 @@ if (configContent && configContent.BASE_MODULE === 'liquid') {
     },
     {
       context: ['/liquid/api/**'],
-      target: `http://localhost:8999`,
+      target: `http://localhost:8998`,
       secure: false,
       changeOrigin: true,
       proxyTimeout: 30000,
@@ -70,7 +70,7 @@ if (configContent && configContent.BASE_MODULE === 'liquid') {
 PROXY_CONFIG.push(...[
   {
     context: ['/testnet/api/v1/lightning/**'],
-    target: `http://localhost:8999`,
+    target: `http://localhost:8998`,
     secure: false,
     changeOrigin: true,
     proxyTimeout: 30000,
@@ -88,7 +88,7 @@ PROXY_CONFIG.push(...[
   },
   {
     context: ['/api/v1/**'],
-    target: `http://localhost:8999`,
+    target: `http://localhost:8998`,
     secure: false,
     ws: true,
     changeOrigin: true,
@@ -96,7 +96,7 @@ PROXY_CONFIG.push(...[
   },
   {
     context: ['/api/**'],
-    target: `http://localhost:8999`,
+    target: `http://localhost:8998`,
     secure: false,
     changeOrigin: true,
     proxyTimeout: 30000,
