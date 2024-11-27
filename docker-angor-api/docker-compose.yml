@@ -50,7 +50,7 @@ services:
 
   mempool_api:
     container_name: mempool-api
-    image: eugenenostrdev/mempool-api:amd64-1.1.7
+    image: eugenenostrdev/mempool-api:amd64-1.1.8
     environment:
       MEMPOOL_BACKEND: "esplora"
       ESPLORA_REST_API_URL: "http://mempool-electrs:3003"
