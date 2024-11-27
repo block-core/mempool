@@ -9,7 +9,7 @@ import { Conversion } from '@app/services/price.service';
 import { StorageService } from '@app/services/storage.service';
 import { WebsocketResponse } from '@interfaces/websocket.interface';
 import { TxAuditStatus } from '@components/transaction/transaction.component';
-import { AngorProject } from "@/interfaces/angor.interface";
+import { AngorProject } from '@interfaces/angor.interface';
 
 @Injectable({
   providedIn: 'root'
