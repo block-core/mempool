@@ -1,17 +1,18 @@
 import { Component, HostBinding, OnInit } from "@angular/core";
 import { Observable } from "rxjs";
-import { AngorProject } from "../interfaces/angor.interface";
-import { ApiService } from "../services/api.service";
+import { AngorProject } from "../../interfaces/angor.interface";
+import { ApiService } from "../../services/api.service";
 
 @Component({
   selector: 'app-angor',
-  templateUrl: './angor.component.html',
-  styleUrls: ['./angor.component.css']
+  templateUrl: './projects-list.component.html',
+  styleUrls: ['projects-list.component.scss']
 })
-export class AngorComponent implements OnInit {
+export class ProjectsListComponent implements OnInit {
   @HostBinding('attr.dir') dir = 'ltr';
 
   angorProjects$: Observable<AngorProject[]> = undefined;
+  nonEmptyProjects: boolean = true;
   isLoading = true;
 
 

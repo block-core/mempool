@@ -9,7 +9,7 @@ import { Conversion } from '@app/services/price.service';
 import { StorageService } from '@app/services/storage.service';
 import { WebsocketResponse } from '@interfaces/websocket.interface';
 import { TxAuditStatus } from '@components/transaction/transaction.component';
-import { AngorProject } from '@interfaces/angor.interface';
+import { AngorProject, AngorProjectInvestment, AngorProjectStats } from "@interfaces/angor.interface";
 
 @Injectable({
   providedIn: 'root'
@@ -588,7 +588,19 @@ export class ApiService {
     queryParams.append('limit', '25');
     const queryString = queryParams.toString();
     return this.httpClient.get<AngorProject[]>(
-      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects' + queryString
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects?' + queryString
+    );
+  }
+
+  getAngorProjectStats$(angorId: string): Observable<AngorProjectStats> {
+    return this.httpClient.get<AngorProjectStats>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/stats'
+    );
+  }
+
+  getAngorProjectInvestments(angorId: string): Observable<AngorProjectInvestment[]> {
+    return this.httpClient.get<AngorProjectInvestment[]>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments'
     );
   }
 }
