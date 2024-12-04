@@ -309,7 +309,7 @@ class ElectrsApi implements AbstractBitcoinApi {
   }
 
   $getAddressTransactions(address: string, txId?: string): Promise<IEsploraApi.Transaction[]> {
-    throw new Error('Method getAddressTransactions not implemented.');
+    return this.failoverRouter.$get<IEsploraApi.Transaction[]>('/address/' + address + '/txs');
   }
 
   $getScriptHash(scripthash: string): Promise<IEsploraApi.ScriptHash> {
