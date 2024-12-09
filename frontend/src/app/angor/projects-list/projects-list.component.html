@@ -44,10 +44,12 @@
       (pageChange)="pageChange(page)"
       [boundaryLinks]="true"
       [ellipses]="false"
-    >
+    ></ngb-pagination>
 
-
-    </ngb-pagination>
+    <ng-template [ngIf]="!widget">
+      <div class="clearfix"></div>
+      <br>
+    </ng-template>
 
         </div>
 

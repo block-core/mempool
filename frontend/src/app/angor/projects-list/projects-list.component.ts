@@ -1,5 +1,5 @@
 import { Component, HostBinding, Input, OnInit } from "@angular/core";
-import { Observable } from "rxjs";
+import { BehaviorSubject, combineLatest, Observable, Subscription, timer } from "rxjs";
 import { AngorProject } from "../../interfaces/angor.interface";
 import { ApiService } from "../../services/api.service";
 import { map, switchMap, tap } from "rxjs/operators";
@@ -16,6 +16,8 @@ export class ProjectsListComponent implements OnInit {
   angorProjects$: Observable<AngorProject[]> = undefined;
   isLoading = true;
   page = 1;
+  pageSubject: BehaviorSubject<number> = new BehaviorSubject(this.page);
+  paramSubscription: Subscription;
   projectsCount: number;
   maxSize = window.innerWidth <= 767.98 ? 3 : 5;
   dir: 'rtl' | 'ltr' = 'ltr';
@@ -28,20 +30,36 @@ export class ProjectsListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.angorProjects$ = this.projects$ || this.apiService.getAngorProjects$(15).pipe(
-      tap(response => {
-        const totalCountHeader = response.headers.get('Pagination-Total');
-        if (totalCountHeader) {
-          this.projectsCount = parseInt(totalCountHeader);
-        }
-        this.isLoading = false;
-      }),
-      map(response => response.body as AngorProject[])
+    this.paramSubscription = combineLatest([
+      this.route.params,
+      timer(0),
+    ]).pipe(
+      tap(([params]) => {
+        this.page = +params['page'] || 1;
+        this.pageSubject.next(this.page);
+      })
+    ).subscribe();
+
+    this.angorProjects$ = this.projects$ || this.pageSubject.pipe(
+      tap(() => this.isLoading = true),
+      switchMap(page =>
+        this.apiService.getAngorProjects$(15, page).pipe(
+          tap(response => {
+            const totalCountHeader = response.headers.get('Pagination-Total');
+            if (totalCountHeader) {
+              this.projectsCount = parseInt(totalCountHeader);
+            }
+            this.isLoading = false;
+          }),
+          map(response => response.body as AngorProject[])
+        )
+      )
     );
   }
 
   pageChange(page: number): void {
-    this.router.navigate(['angor', 'list', page]);
+    this.pageSubject.next(page);
+    this.router.navigate(['../', page], {relativeTo: this.route });
   }
 
 }

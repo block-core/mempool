@@ -17,7 +17,7 @@ export class ProjectsDashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.projects$ = this.apiService.getAngorProjects$(10).pipe(
+    this.projects$ = this.apiService.getAngorProjects$(10, 1).pipe(
       map(response => response.body as AngorProject[])
     );
   }
