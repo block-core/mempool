@@ -1,0 +1,20 @@
+<div class="container-xl dashboard-container">
+  <div class="row justify-content-center">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <a class="title-link" href="" [routerLink]="['/angor', 'projects', 'list']">
+            <h5 class="card-title d-inline">Recent Angor Projects</h5>
+            <span> </span>
+            <fa-icon
+              [icon]="['fas', 'external-link-alt']"
+              [fixedWidth]="true"
+              style="vertical-align: 'text-top'; font-size: 13px; color: var(--title-fg)"
+            ></fa-icon>
+          </a>
+          <app-projects-list [widget]="true" [projects$]="projects$"></app-projects-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

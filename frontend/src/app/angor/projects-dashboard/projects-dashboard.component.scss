@@ -1,0 +1,27 @@
+.dashboard-container {
+  text-align: center;
+  margin-top: 0.5rem;
+  .col {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.card {
+  background-color: var(--bg);
+}
+
+.card-title {
+  font-size: 1rem;
+  color: var(--title-fg);
+}
+
+.card-title > a {
+  color: var(--title-fg);
+}
+
+.title-link, .title-link:hover, .title-link:focus, .title-link:active {
+  display: block;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: inherit;
+}

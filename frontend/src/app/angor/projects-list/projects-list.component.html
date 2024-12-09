@@ -1,11 +1,14 @@
-<div class="container-xl dashboard-container">
+<div
+  class="container-lg widget-container"
+  [class.widget]="widget"
+  [class.full-height]="!widget"
+>
+  <h1 *ngIf="!widget" class="float-left">Angor Projects</h1>
+  <div *ngIf="!widget && isLoading" class="spinner-border ml-3" role="status"></div>
 
+  <div class="clearfix"></div>
+  
   <div class="row justify-content-center">
-    <!-- Recent blocks -->
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Angor Projects</h5>
           <table class="table projects">
             <thead>
             <th class="table-cell-angor-id text-left">Angor ID</th>
@@ -30,11 +33,8 @@
             </tr>
             </tbody>
           </table>
-
         </div>
-      </div>
-    </div>
-  </div>
+
 
   <ng-template #noData>
     <div class="no-data">
