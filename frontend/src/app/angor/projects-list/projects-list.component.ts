@@ -28,7 +28,7 @@ export class ProjectsListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.angorProjects$ = this.projects$ || this.apiService.getAngorProjects$(10).pipe(
+    this.angorProjects$ = this.projects$ || this.apiService.getAngorProjects$(15).pipe(
       tap(response => {
         const totalCountHeader = response.headers.get('Pagination-Total');
         if (totalCountHeader) {
@@ -38,6 +38,10 @@ export class ProjectsListComponent implements OnInit {
       }),
       map(response => response.body as AngorProject[])
     );
+  }
+
+  pageChange(page: number): void {
+    this.router.navigate(['angor', 'list', page]);
   }
 
 }

@@ -7,7 +7,7 @@
   <div *ngIf="!widget && isLoading" class="spinner-border ml-3" role="status"></div>
 
   <div class="clearfix"></div>
-  
+
   <div class="row justify-content-center">
           <table class="table projects">
             <thead>
@@ -33,6 +33,22 @@
             </tr>
             </tbody>
           </table>
+
+    <ngb-pagination
+      *ngIf="!widget"
+      class="pagination-container float-right mt-2"
+      [collectionSize]="this.projectsCount"
+      [rotate]="true"
+      [pageSize]="15"
+      [(page)]="page"
+      (pageChange)="pageChange(page)"
+      [boundaryLinks]="true"
+      [ellipses]="false"
+    >
+
+
+    </ngb-pagination>
+
         </div>
 
 

@@ -583,12 +583,15 @@ export class ApiService {
     return this.blockSummaryLoaded[hash];
   }
 
-  getAngorProjects$(): Observable<AngorProject[]> {
+  getAngorProjects$(limit: number): Observable<HttpResponse<AngorProject[]>> {
     const queryParams = new URLSearchParams();
-    queryParams.append('limit', '25');
+    queryParams.append('limit', limit.toString());
     const queryString = queryParams.toString();
     return this.httpClient.get<AngorProject[]>(
-      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects?' + queryString
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects?' + queryString,
+      {
+        observe: 'response'
+      }
     );
   }
 
