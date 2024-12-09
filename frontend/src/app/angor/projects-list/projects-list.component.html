@@ -9,30 +9,45 @@
   <div class="clearfix"></div>
 
   <div class="row justify-content-center">
-          <table class="table projects">
-            <thead>
-            <th class="table-cell-angor-id text-left">Angor ID</th>
-            <th class="table-cell-created-on">Block</th>
-            <th class="table-cell-txid text-right">Founding Transaction</th>
-            </thead>
-            <tbody *ngIf="angorProjects$ | async as projects">
-            <tr *ngFor="let project of projects; let i = index;">
-              <td class="table-cell-angor-id text-right">
-                <a [routerLink]="['/angor', 'projects', project.projectIdentifier]">
-                  <app-truncate [text]="project.projectIdentifier" [lastChars]="5"></app-truncate>
-                </a>
-              </td>
-              <td class="table-cell-created-on">
-                {{ project.createdOnBlock }}
-              </td>
-              <td class="table-cell-txid text-right">
-                <a [routerLink]="['/tx' | relativeUrl, project.trxId]">
-                  <app-truncate [text]="project.trxId" [lastChars]="5"></app-truncate>
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+    <table class="table projects">
+      <thead>
+      <th class="table-cell-angor-id text-left">Angor ID</th>
+      <th class="table-cell-created-on">Block</th>
+      <th class="table-cell-txid text-right">Founding Transaction</th>
+      </thead>
+      <tbody *ngIf="angorProjects$ | async as projects; else skeleton" [style]="isLoading ? 'opacity: 0.75' : ''">
+      <tr *ngFor="let project of projects; let i = index;">
+        <td class="table-cell-angor-id text-right">
+          <a [routerLink]="['/angor', 'projects', project.projectIdentifier]">
+            <app-truncate [text]="project.projectIdentifier" [lastChars]="5"></app-truncate>
+          </a>
+        </td>
+        <td class="table-cell-created-on">
+          {{ project.createdOnBlock }}
+        </td>
+        <td class="table-cell-txid text-right">
+          <a [routerLink]="['/tx' | relativeUrl, project.trxId]">
+            <app-truncate [text]="project.trxId" [lastChars]="5"></app-truncate>
+          </a>
+        </td>
+      </tr>
+      </tbody>
+      <ng-template #skeleton>
+        <tbody>
+        <tr *ngFor="let item of skeletonLines">
+          <td class="table-cell-angor-id text-right">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+          <td class="table-cell-created-on">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+          <td class="table-cell-txid text-right">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+        </tr>
+        </tbody>
+      </ng-template>
+    </table>
 
     <ngb-pagination
       *ngIf="!widget"

@@ -19,6 +19,7 @@ export class ProjectsListComponent implements OnInit {
   pageSubject: BehaviorSubject<number> = new BehaviorSubject(this.page);
   paramSubscription: Subscription;
   projectsCount: number;
+  skeletonLines: number[] = [];
   maxSize = window.innerWidth <= 767.98 ? 3 : 5;
   dir: 'rtl' | 'ltr' = 'ltr';
 
@@ -39,6 +40,8 @@ export class ProjectsListComponent implements OnInit {
         this.pageSubject.next(this.page);
       })
     ).subscribe();
+
+    this.skeletonLines = Array.from({ length: this.widget ? 10 : 15 }, (_, i) => i);
 
     this.angorProjects$ = this.projects$ || this.pageSubject.pipe(
       tap(() => this.isLoading = true),
