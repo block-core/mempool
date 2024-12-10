@@ -1,9 +1,10 @@
 import { Component, OnInit } from "@angular/core";
-import { Observable } from "rxjs";
+import { finalize, Observable, of } from "rxjs";
 import { AngorProjectInvestment, AngorProjectStats } from "@interfaces/angor.interface";
 import { ActivatedRoute } from "@angular/router";
 import { ApiService } from "@app/services/api.service";
-import { switchMap } from "rxjs/operators";
+import { catchError, map, switchMap } from "rxjs/operators";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'app-project',
@@ -11,38 +12,55 @@ import { switchMap } from "rxjs/operators";
   styleUrls: ['project.component.scss']
 })
 export class ProjectComponent implements OnInit {
-  angorId$ = this.route.paramMap;
+  angorId$: Observable<string | null>;
   projectStats$: Observable<AngorProjectStats> | null = null;
   projectInvestments$: Observable<AngorProjectInvestment[]> | null = null;
+  isLoading = true;
+  error: HttpErrorResponse | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-  ) {}
-
-  ngOnInit() {
-    this.projectStats$ = this.route.paramMap.pipe(
-      switchMap(params => {
-        const angorId = params.get('projectId');
-        if (angorId) {
-          return this.apiService.getAngorProjectStats$(angorId);
-        } else {
-          throw new Error("Project ID is missing");
-        }
-      })
+  ) {
+    this.angorId$ = this.route.paramMap.pipe(
+      map(params => params.get('projectId'))
     );
 
-    this.projectInvestments$ = this.route.paramMap.pipe(
-      switchMap(params => {
-        const angorId = params.get('projectId');
-        if (angorId) {
-          return this.apiService.getAngorProjectInvestments(angorId);
-        } else {
-          throw new Error("Project ID is missing");
-        }
-      })
-    );
+    this.projectStats$ = of(null);
+    this.projectInvestments$ = of([]);
   }
 
+  ngOnInit() {
+    this.angorId$.pipe(
+      switchMap(angorId => {
+        if (!angorId) {
+          throw new Error('Angor ID is missing.');
+        }
 
+        this.isLoading = true;
+
+        return this.apiService.getAngorProjectStats$(angorId).pipe(
+          switchMap(stats => {
+            this.projectStats$ = of(stats);
+            return this.apiService.getAngorProjectInvestments(angorId);
+          }),
+          map(investments => {
+            this.projectInvestments$ = of(investments);
+            return investments;
+          }),
+          catchError(err => {
+            this.error = new HttpErrorResponse({ error: 'Failed to load project data.' });
+            return of([]);
+          }),
+          finalize(() => this.isLoading = false),
+        );
+      }),
+      catchError(err => {
+        this.error = new HttpErrorResponse({ error: 'Invalid Angor ID.'});
+        this.isLoading = false;
+        return of([]);
+      })
+    )
+      .subscribe();
+  }
 }
