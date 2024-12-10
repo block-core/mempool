@@ -110,6 +110,7 @@
 
     <!-- Investments List -->
     <div class="investments-list" *ngIf="projectInvestments$ | async as investments">
+      <div *ngIf="investments.length > 0">
       <table class="table table-borderless table-fixed">
         <thead>
         <th class="txid text-left">Investment Amount</th>
@@ -132,6 +133,7 @@
         </tr>
         </tbody>
       </table>
+      </div>
     </div>
   </ng-container>
 </div>

@@ -226,6 +226,10 @@ class AngorProjectRepository {
       const [rows] = await DB.query(query);
 
       let investments = rows as ProjectInvestment[];
+
+      if (investments.length === 0) {
+        return [];
+      }
       investments = investments.map((investment) => ({
         ...investment,
         // convert DB boolean representation (0 and 1) into JS boolean
