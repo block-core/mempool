@@ -254,7 +254,6 @@ class AngorProjectRepository {
   /**
    * Provides Angor projects.
    * @param limit - maximum amount of items to return (not more than 50).
-   * @param order - return items in ascending or descending order
    * @param offset - selection offset.
    * @returns - promise that resolves into an array of objects that confirm Project interface.
    */
