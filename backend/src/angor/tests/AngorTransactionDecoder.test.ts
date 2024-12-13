@@ -6,6 +6,7 @@ import {
 import * as bitcoinJS from 'bitcoinjs-lib';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
+import DB from '../../database';
 
 describe('AngorTransactionDecoder', () => {
   describe('Decoding transaction for Angor project creation', () => {
@@ -141,9 +142,13 @@ describe('AngorTransactionDecoder', () => {
 
     describe('decodeAndStoreProjectCreationTransaction', () => {
       it('should call $setProject method of AngorProjectRepository', async () => {
-        const setProjectSpy = jest.spyOn(AngorProjectRepository, '$setProject');
+        const setProjectSpy = jest
+          .spyOn(AngorProjectRepository, '$setProject')
+          .mockImplementation(() => Promise.resolve());
 
-        setProjectSpy.mockImplementation(() => Promise.resolve());
+        const updateInvestmentStatusSpy = jest
+          .spyOn(AngorInvestmentRepository, '$updateInvestmentsStatus')
+          .mockImplementation(() => Promise.resolve());
 
         const transactionStatus = AngorTransactionStatus.Confirmed;
 
@@ -169,6 +174,11 @@ describe('AngorTransactionDecoder', () => {
           founderKeyHex,
           txid,
           blockHeight
+        );
+
+        expect(updateInvestmentStatusSpy).toHaveBeenCalledWith(
+          addressOnFeeOutput,
+          transactionStatus
         );
       });
     });
@@ -307,12 +317,12 @@ describe('AngorTransactionDecoder', () => {
 
     describe('decodeAndStoreInvestmentTransaction', () => {
       it('should call $getProject method of AngorProjectRepository', async () => {
-        const getProjectSpy = jest.spyOn(
+        const getProjectSpy = jest
+          .spyOn(
           AngorProjectRepository,
           '$getProjectByAddressOnFeeOutput'
-        );
-
-        getProjectSpy.mockImplementation(() => Promise.resolve(undefined));
+        )
+          .mockImplementation(() => Promise.resolve(undefined));
 
         await angorDecoder.decodeAndStoreInvestmentTransaction(
           transactionStatus
@@ -339,9 +349,8 @@ describe('AngorTransactionDecoder', () => {
         const setInvestmentSpy = jest.spyOn(
           AngorInvestmentRepository,
           '$setInvestment'
-        );
-
-        setInvestmentSpy.mockImplementation(() => Promise.resolve());
+        )
+          .mockImplementation(() => Promise.resolve());
 
         await angorDecoder.decodeAndStoreInvestmentTransaction(
           transactionStatus
