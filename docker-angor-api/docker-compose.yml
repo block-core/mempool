@@ -34,8 +34,8 @@ services:
       MINERENABLED: ${MINERENABLED:-0} # change this to 1 if this node needs to mine (however for simplicity there should only be one mining node per challenge)
       NBITS: $NBITS
       MINETO: ${MINETO:-tb1qk4pq0rh75qtph47wlufhyss43flhvhvwe4zt8a}
-      PRIVKEY: ${PRIVKEY:-cRz3Ci2aUNmdP4pViSM8LafwKHZmvn4X6gjeCXzVkBYBLhzA3uFC} # private key path is m/84'/1'/0'/0/0 of test wallet mnemonic "margin radio diamond leg loud street announce guitar video shiver speed eyebrow"
-      SIGNETCHALLENGE: ${SIGNETCHALLENGE:-512102b57c4413a0354bcc360a37e035f26670deda14bab613c28fbd30fe52b2deccc151ae}
+      PRIVKEY: ${PRIVKEY:-cNDhpWanXGyCed6U7eBNqRN3EyB7mEUbqm19tA7z5ho6BiNaPfmy} # private key path is m/84'/1'/0'/0/0 of test wallet mnemonic "margin radio diamond leg loud street announce guitar video shiver speed eyebrow"
+      SIGNETCHALLENGE: ${SIGNETCHALLENGE:-512102a3f8184701a033e5f8faa295647374b0bbc868082240d6e7ad8e9ecb0d86e6d451ae}
       EXTERNAL_IP: $EXTERNAL_IP
       ADDNODE: ${ADDNODE:-207.180.254.78}
       RPCUSER: ${RPCUSER:-rpcuser}
