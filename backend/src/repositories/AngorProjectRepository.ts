@@ -268,7 +268,7 @@ class AngorProjectRepository {
     const order = 'DESC';
 
     try {
-      const query = `SELECT id, founder_key, npub, created_on_block, txid, nostr_event_id
+      const query = `SELECT id, founder_key, created_on_block, txid, nostr_event_id
           FROM angor_projects
           WHERE creation_transaction_status = '${
             AngorTransactionStatus.Confirmed
