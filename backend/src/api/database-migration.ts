@@ -31,12 +31,6 @@ class DatabaseMigration {
    */
   public async $initializeOrMigrateDatabase(): Promise<void> {
     logger.debug('MIGRATIONS: Running migrations');
-    await this.$executeQuery(this.getCreateAngorBlocksTableQuery(), await this.$checkIfTableExists('angor_blocks'));
-    await this.$executeQuery(this.getCreateAngorProjectsTableQuery(), await this.$checkIfTableExists('angor_projects'));
-    await this.$executeQuery(this.getCreateAngorInvestmentsTableQuery(), await this.$checkIfTableExists('angor_investments'));
-
-
-
     await this.$printDatabaseVersion();
 
     // First of all, if the `state` database does not exist, create it so we can track migration version

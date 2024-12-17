@@ -8,7 +8,6 @@ import AngorProjectRepository, {
   Project,
 } from '../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../repositories/AngorInvestmentRepository';
-import logger from "../logger";
 
 /**
  * Represents a Bitcoin network.
@@ -410,14 +409,10 @@ export class AngorTransactionDecoder {
   }
 
   /**
-   * Sets Nostr public key.
-   * @returns - string representing Nostr public key of Angor project.
+   * Sets Nostr event id.
+   * @return - string representing the Nostr event ID associated with the current Angor project.
+   * @private
    */
-  private getNostrPubKey(): string {
-    const chunks = this.decompileProjectCreationOpReturnScript();
-    return chunks[0];
-  }
-
   private getNostrEventId(): string {
     const chunks = this.decompileProjectCreationOpReturnScript();
     return chunks[2];

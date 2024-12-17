@@ -272,7 +272,7 @@ class Indexer {
             AngorTransactionStatus.Confirmed,
             indexedBlock.height
           )
-          .catch(async (err) => {
+          .catch(async () => {
             // If transaction is not an Angor project creation transaction,
             // try to decode and store it as Angor investment transaction.
             await angorDecoder
