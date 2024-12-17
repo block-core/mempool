@@ -339,10 +339,10 @@ describe('AngorTransactionDecoder', () => {
           .mockImplementation(() =>
             Promise.resolve({
               founder_key: '',
-              npub: '',
               id: '',
               created_on_block: 1,
               txid: '',
+              nostr_event_id: ''
             })
           );
 
