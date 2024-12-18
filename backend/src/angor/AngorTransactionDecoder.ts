@@ -68,19 +68,19 @@ export class AngorTransactionDecoder {
     const founderKeyHashInt = this.hashToInt(founderKeyHash);
     const projectIdDerivation = this.getProjectIdDerivation(founderKeyHashInt);
     const projectId = this.getProjectId(projectIdDerivation);
-    const nostrPubKey = this.getNostrPubKey();
+    const nostrEventId = this.getNostrEventId();
     const addressOnFeeOutput = this.getAddressOnFeeOutput();
     const txid = this.transaction.getId();
 
     // Store Angor project in the DB.
     await this.storeProjectInfo(
       projectId,
-      nostrPubKey,
       addressOnFeeOutput,
       transactionStatus,
       founderKeyHex,
       txid,
-      createdOnBlock
+      createdOnBlock,
+      nostrEventId
     );
 
     // If transaction is confirmed (in the block), update statuses
@@ -224,23 +224,27 @@ export class AngorTransactionDecoder {
     const chunks = bitcoinJS.script.toASM(decompiled).split(' ');
 
     // Throw an error if the chunks amount is incorrect.
-    if (chunks.length !== 3) {
+    if (chunks.length !== 4) {
       throw new Error(`${errorBase} Wrong chunk amount.`);
     }
 
     // Throw an error if the first chunk is not OP_RETURN.
     if (chunks[0] !== 'OP_RETURN') {
-      throw new Error(`${errorBase} Wrong first chunk.`);
+      throw new Error(`${errorBase} Wrong OP_RETURN chunk.`);
     }
 
     // Throw an error if the byte length of the second chunk is not 33.
     if (Buffer.from(chunks[1], 'hex').byteLength !== 33) {
-      throw new Error(`${errorBase} Wrong second chunk.`);
+      throw new Error(`${errorBase} Wrong founder pubkey chunk.`);
     }
 
     // Throw an error if the byte length of the third chunk is not 32.
-    if (Buffer.from(chunks[2], 'hex').byteLength !== 32) {
-      throw new Error(`${errorBase} Wrong third chunk.`);
+    if (Buffer.from(chunks[2], 'hex').byteLength !== 2) {
+      throw new Error(`${errorBase} Wrong key type chunk.`);
+    }
+
+    if (Buffer.from(chunks[3], 'hex').byteLength !== 32) {
+      throw new Error(`${errorBase} Wrong nostr event ID chunk.`);
     }
 
     // Remove the first chunk (OP_RETURN) as it is not useful anymore.
@@ -405,13 +409,13 @@ export class AngorTransactionDecoder {
   }
 
   /**
-   * Sets Nostr public key.
-   * @returns - string representing Nostr public key of Angor project.
+   * Sets Nostr event id.
+   * @return - string representing the Nostr event ID associated with the current Angor project.
+   * @private
    */
-  private getNostrPubKey(): string {
+  private getNostrEventId(): string {
     const chunks = this.decompileProjectCreationOpReturnScript();
-
-    return chunks[1];
+    return chunks[2];
   }
 
   /**
@@ -434,21 +438,21 @@ export class AngorTransactionDecoder {
    */
   private async storeProjectInfo(
     projectId: string,
-    nostrPubKey: string,
     addressOnFeeOutput: string,
     transactionStatus: AngorTransactionStatus,
     founderKey: string,
     txid: string,
-    createdOnBlock?: number
+    createdOnBlock?: number,
+    nostrEventId?: string
   ): Promise<void> {
     await AngorProjectRepository.$setProject(
       projectId,
-      nostrPubKey,
       addressOnFeeOutput,
       transactionStatus,
       founderKey,
       txid,
-      createdOnBlock
+      createdOnBlock,
+      nostrEventId
     );
   }
 
