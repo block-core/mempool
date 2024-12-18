@@ -7,17 +7,17 @@ import { fetchAngorVouts, computeAdvancedStats, computeStatsTally } from './ango
 
 interface ProjectsPayloadItem {
   founderKey: string;
+  nostrPubKey: string;
   projectIdentifier: string;
   createdOnBlock: number;
   trxId: string;
-  nostrEventId: string;
 }
 interface ProjectPayloadItem {
   founderKey: string;
+  nostrPubKey: string;
   projectIdentifier: string;
   createdOnBlock: number;
   trxId: string;
-  nostrEventId: string;
   totalInvestmentsCount: number;
 }
 
@@ -150,10 +150,10 @@ class AngorRoutes {
     const payload: ProjectsPayloadItem[] = projects
       .map((project) => ({
         founderKey: project.founder_key,
+        nostrPubKey: project.npub,
         projectIdentifier: project.id,
         createdOnBlock: project.created_on_block,
         trxId: project.txid,
-        nostrEventId: project.nostr_event_id
       }))
       .sort(
         (p1: ProjectsPayloadItem, p2: ProjectsPayloadItem) =>
@@ -197,10 +197,10 @@ class AngorRoutes {
     // Adjust DB data to confirm ProjectsPayloadItem interface.
     const payload: ProjectPayloadItem = {
       founderKey: project.founder_key,
+      nostrPubKey: project.npub,
       projectIdentifier: project.id,
       createdOnBlock: project.created_on_block,
       trxId: project.txid,
-      nostrEventId: project.nostr_event_id,
       totalInvestmentsCount: project.investments_count,
     };
 

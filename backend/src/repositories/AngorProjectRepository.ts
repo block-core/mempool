@@ -4,10 +4,10 @@ import { AngorTransactionStatus } from '../angor/AngorTransactionDecoder';
 
 export interface Project {
   founder_key: string;
+  npub: string;
   id: string;
   created_on_block: number;
   txid: string;
-  nostr_event_id: string;
 }
 
 interface ProjectWithInvestmentsCount extends Project {
@@ -36,35 +36,34 @@ class AngorProjectRepository {
   /**
    * Stores Angor project into the DB.
    * @param id - project Id.
+   * @param npub - project Nostr public key.
    * @param addressOnFeeOutput - address on fee output.
    * @param transactionStatus - transaction status.
    * @param founderKey - founder nostr pubkey.
    * @param txid - transaction ID.
    * @param createdOnBlock - block height (optional).
-   * @param nostrEventId - nostr event ID associated with the project
    */
   public async $setProject(
     id: string,
+    npub: string,
     addressOnFeeOutput: string,
     transactionStatus: AngorTransactionStatus,
     founderKey: string,
     txid: string,
-    createdOnBlock?: number,
-    nostrEventId?: string
+    createdOnBlock?: number
   ): Promise<void> {
     try {
-      logger.debug(`nostrEventId=${nostrEventId}`);
       const query = `INSERT INTO angor_projects
           (
             id,
+            npub,
             address_on_fee_output,
             creation_transaction_status,
             created_on_block,
             txid,
-            founder_key,
-            nostr_event_id
+            founder_key
           )
-          VALUES ('${id}', '${addressOnFeeOutput}', '${transactionStatus}', '${createdOnBlock}', '${txid}', '${founderKey}', '${nostrEventId}')
+          VALUES ('${id}', '${npub}', '${addressOnFeeOutput}', '${transactionStatus}', ${createdOnBlock}, '${txid}', '${founderKey}')
           ON DUPLICATE KEY UPDATE
             creation_transaction_status = '${transactionStatus}'
         `;
@@ -118,9 +117,9 @@ class AngorProjectRepository {
       const query = `SELECT
             angor_projects.id,
             angor_projects.founder_key,
+            angor_projects.npub,
             angor_projects.created_on_block,
             angor_projects.txid,
-            angor_projects.nostr_event_id,
             COUNT(angor_investments.txid) AS investments_count
           FROM angor_projects
           LEFT JOIN angor_investments
@@ -268,7 +267,7 @@ class AngorProjectRepository {
     const order = 'DESC';
 
     try {
-      const query = `SELECT id, founder_key, created_on_block, txid, nostr_event_id
+      const query = `SELECT id, founder_key, npub, created_on_block, txid
           FROM angor_projects
           WHERE creation_transaction_status = '${
             AngorTransactionStatus.Confirmed
