@@ -53,7 +53,6 @@ class AngorProjectRepository {
     nostrEventId?: string
   ): Promise<void> {
     try {
-      logger.debug(`nostrEventId=${nostrEventId}`);
       const query = `INSERT INTO angor_projects
           (
             id,
@@ -214,6 +213,7 @@ class AngorProjectRepository {
           LEFT JOIN angor_investments
             ON angor_projects.address_on_fee_output = angor_investments.address_on_fee_output
           WHERE angor_projects.id = '${id}'
+          AND angor_investments.address_on_fee_output IS NOT NULL
           ${
             investorPubKey
               ? `AND angor_investments.investor_npub = '${investorPubKey}'`
