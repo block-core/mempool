@@ -8,7 +8,6 @@ import AngorProjectRepository, {
   Project,
 } from '../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../repositories/AngorInvestmentRepository';
-import logger from "../logger";
 
 /**
  * Represents a Bitcoin network.
