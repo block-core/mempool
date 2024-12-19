@@ -1,0 +1,43 @@
+.title-block {
+  flex-wrap: wrap;
+  align-items: baseline;
+  @media (min-width: 650px) {
+    flex-direction: row;
+  }
+  h1 {
+    margin: 0rem;
+    margin-right: 15px;
+    line-height: 1;
+  }
+}
+
+.angor-link {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: baseline;
+  width: 0;
+  max-width: 100%;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-top: 8px;
+  @media (min-width: 651px) {
+    flex-grow: 1;
+    margin-bottom: 0px;
+    margin-right: 1em;
+    top: 1px;
+    position: relative;
+  }
+  @media (max-width: 650px) {
+    width: 100%;
+    order: 3;
+
+    .angor-id {
+      width: 200px;
+      min-width: 200px;
+      flex-grow: 1;
+    }
+  }
+}
+
+

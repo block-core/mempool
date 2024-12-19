@@ -97,7 +97,7 @@ const ADDRESS_CHARS: {
       + `|`
         + `[V][TJ]` // Confidential P2PKH or P2SH starts with VT or VJ
         + BASE58_CHARS
-        + `{78}`, 
+        + `{78}`,
     bech32: `(?:`
         + `(?:` // bech32 liquid starts with ex1 (unconfidential) or lq1 (confidential)
           + `ex1`
@@ -139,14 +139,14 @@ const ADDRESS_CHARS: {
       + `)`,
   },
 }
-type RegexTypeNoAddrNoBlockHash = | `transaction` | `blockheight` | `date` | `timestamp`;
+type RegexTypeNoAddrNoBlockHash = | `transaction` | `blockheight` | `date` | `timestamp` | `angor`;
 export type RegexType = `address` | `blockhash` | RegexTypeNoAddrNoBlockHash;
 
 export const NETWORKS = [`testnet`, `testnet4`, `signet`, `liquid`, `liquidtestnet`, `mainnet`] as const;
 export type Network = typeof NETWORKS[number]; // Turn const array into union type
 
 export const ADDRESS_REGEXES: [RegExp, Network][] = NETWORKS
-  .map(network => [getRegex('address', network), network])
+  .map(network => [getRegex('address', network), network]);
 
 export function findOtherNetworks(address: string, skipNetwork: Network, env: Env): { network: Network, address: string, isNetworkAvailable: boolean }[] {
   return ADDRESS_REGEXES
@@ -338,6 +338,9 @@ export function getRegex(type: RegexType, network?: Network): RegExp {
     // [Testing Order]: any order is fine
     case `timestamp`:
       regex += `${NUMBER_CHARS}{10}`; // Exactly 10 digits
+      break;
+    case `angor`:
+      regex += `angor1[ac-hj-np-z02-9]{39}`;
       break;
     default:
       throw new Error(`Invalid RegexType ${type} (Unreachable error in TypeScript)`);

@@ -44,6 +44,7 @@ export class SearchFormComponent implements OnInit {
   regexBlockheight = getRegex('blockheight');
   regexDate = getRegex('date');
   regexUnixTimestamp = getRegex('timestamp');
+  regexAngor = getRegex('angor');
 
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
@@ -197,9 +198,10 @@ export class SearchFormComponent implements OnInit {
           const matchesAddress = !matchesTxId && this.regexAddress.test(searchText);
           const publicKey = matchesAddress && searchText.startsWith('0');
           const otherNetworks = findOtherNetworks(searchText, this.network as any || 'mainnet', this.env);
+          const matchesAngor = this.regexAngor.test(searchText);
           const liquidAsset = this.assets ? (this.assets[searchText] || []) : [];
           const pools = this.pools.filter(pool => pool["name"].toLowerCase().includes(searchText.toLowerCase())).slice(0, 10);
-          
+
           if (matchesDateTime && searchText.indexOf('/') !== -1) {
             searchText = searchText.replace(/\//g, '-');
           }
@@ -223,7 +225,8 @@ export class SearchFormComponent implements OnInit {
             nodes: lightningResults.nodes,
             channels: lightningResults.channels,
             liquidAsset: liquidAsset,
-            pools: pools
+            pools: pools,
+            angor: matchesAngor
           };
         })
       );
@@ -302,6 +305,8 @@ export class SearchFormComponent implements OnInit {
           (data) => { this.navigate('/block/', data.hash); },
           (error) => { console.log(error); this.isSearching = false; }
         );
+      } else if (this.regexAngor.test(searchText)) {
+        this.navigate('/angor/projects/', searchText);
       } else {
         this.isSearching = false;
       }

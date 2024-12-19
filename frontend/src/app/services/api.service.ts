@@ -9,6 +9,7 @@ import { Conversion } from '@app/services/price.service';
 import { StorageService } from '@app/services/storage.service';
 import { WebsocketResponse } from '@interfaces/websocket.interface';
 import { TxAuditStatus } from '@components/transaction/transaction.component';
+import { AngorProject, AngorProjectInvestment, AngorProjectStats } from "@interfaces/angor.interface";
 
 @Injectable({
   providedIn: 'root'
@@ -278,7 +279,7 @@ export class ApiService {
         return response;
       })
     );
-  }  
+  }
 
   getPoolStats$(slug: string): Observable<PoolStat> {
     return this.httpClient.get<PoolStat>(this.apiBaseUrl + this.apiBasePath + `/api/v1/mining/pool/${slug}`)
@@ -580,5 +581,31 @@ export class ApiService {
 
   getBlockSummaryLoaded(hash) {
     return this.blockSummaryLoaded[hash];
+  }
+
+  getAngorProjects$(limit: number, page: number): Observable<HttpResponse<AngorProject[]>> {
+    const offset = (page - 1) * limit;
+    const queryParams = new URLSearchParams();
+    queryParams.append('limit', limit.toString());
+    queryParams.append('offset', offset.toString());
+    const queryString = queryParams.toString();
+    return this.httpClient.get<AngorProject[]>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects?' + queryString,
+      {
+        observe: 'response'
+      }
+    );
+  }
+
+  getAngorProjectStats$(angorId: string): Observable<AngorProjectStats> {
+    return this.httpClient.get<AngorProjectStats>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/stats'
+    );
+  }
+
+  getAngorProjectInvestments(angorId: string): Observable<AngorProjectInvestment[]> {
+    return this.httpClient.get<AngorProjectInvestment[]>(
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments'
+    );
   }
 }

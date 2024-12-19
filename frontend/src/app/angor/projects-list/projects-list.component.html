@@ -1,0 +1,78 @@
+<div
+  class="container-lg widget-container"
+  [class.widget]="widget"
+  [class.full-height]="!widget"
+>
+  <h1 *ngIf="!widget" class="float-left">Angor Projects</h1>
+  <div *ngIf="!widget && isLoading" class="spinner-border ml-3" role="status"></div>
+
+  <div class="clearfix"></div>
+
+  <div class="row justify-content-center">
+    <table class="table projects">
+      <thead>
+      <th class="table-cell-angor-id text-left">Angor ID</th>
+      <th class="table-cell-created-on">Block</th>
+      <th class="table-cell-txid text-right">Founding Transaction</th>
+      </thead>
+      <tbody *ngIf="angorProjects$ | async as projects; else skeleton" [style]="isLoading ? 'opacity: 0.75' : ''">
+      <tr *ngFor="let project of projects; let i = index;">
+        <td class="table-cell-angor-id text-right">
+          <a [routerLink]="['/angor', 'projects', project.projectIdentifier]">
+            <app-truncate [text]="project.projectIdentifier" [lastChars]="5"></app-truncate>
+          </a>
+        </td>
+        <td class="table-cell-created-on">
+          {{ project.createdOnBlock }}
+        </td>
+        <td class="table-cell-txid text-right">
+          <a [routerLink]="['/tx' | relativeUrl, project.trxId]">
+            <app-truncate [text]="project.trxId" [lastChars]="5"></app-truncate>
+          </a>
+        </td>
+      </tr>
+      </tbody>
+      <ng-template #skeleton>
+        <tbody>
+        <tr *ngFor="let item of skeletonLines">
+          <td class="table-cell-angor-id text-right">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+          <td class="table-cell-created-on">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+          <td class="table-cell-txid text-right">
+            <span class="skeleton-loader" style="max-width: 100px"></span>
+          </td>
+        </tr>
+        </tbody>
+      </ng-template>
+    </table>
+
+    <ngb-pagination
+      *ngIf="!widget"
+      class="pagination-container float-right mt-2"
+      [collectionSize]="this.projectsCount"
+      [rotate]="true"
+      [pageSize]="15"
+      [(page)]="page"
+      (pageChange)="pageChange(page)"
+      [boundaryLinks]="true"
+      [ellipses]="false"
+    ></ngb-pagination>
+
+    <ng-template [ngIf]="!widget">
+      <div class="clearfix"></div>
+      <br>
+    </ng-template>
+
+        </div>
+
+
+  <ng-template #noData>
+    <div class="no-data">
+      <span>No Angor Projects were found.</span>
+    </div>
+  </ng-template>
+
+</div>

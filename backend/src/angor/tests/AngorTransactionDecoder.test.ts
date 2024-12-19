@@ -12,17 +12,17 @@ describe('AngorTransactionDecoder', () => {
   describe('Decoding transaction for Angor project creation', () => {
     const data = {
       transactionHex:
-        '0100000000010138de40ff6a3d27c33d5b84edf8f35911d819c9c547689cc4da6c5603bc3b26990000000000ffffffff0310270000000000001600144282ccfe323dbba535ccdfc8b66aeeb0bd7dd95b0000000000000000446a210352eb18befb145fef4b5c24513608183d7c3d8004d5fcad9e0e6dc2e89a0af6ae20c749d81fc42037e5b9f7b32ae266cbce75019ce6771be6877d3c509e97e39c14669b052a0100000016001431e5c2bdb361b68eb243ec7dbd46bd7cf71a1d86024730440220075dd33e3809a58423257bf23f5632e305387c283f48dfdce7f355787be33d8002201072fa636fb6bad35ac9d7f8e35fb41eea47de8b38346dc4f123260e9c74c3b401210385143acd30d6d05a5bf35ef1028ce4c50eadffa14670716976007fec5ed3e58500000000',
+        '01000000000101899c7a384fe0e17dfd3d56fcf6bfff796b5d0f40ecb5bc513a92e891bb2018af0200000000ffffffff031127000000000000160014e6285b56cb7cd9a51af2f28cb02762b5298c98db0000000000000000476a2102070d174561688500aac733116dbe70c5ab7480559d25e1c040f480491870c8ba020100200f2d8db8568bd3e12bdab1faa217fffc80459053967eff8bde0a65f14e2b7079d542052a01000000160014ae63769a0b0a5f69b3be5d1e6bb4b00d15eff7d0024830450221008e797faa2ef8c3e91ff03f4a47e76740cbadf4b5061d0508ffd89ab869891cb2022050c624530f5c6afbe6ec0dcba4c81287431595f89370225f7d12d3866cc0499f01210396d79f9c4a836defed971668ea51ed50495d5e2d205da2590e7f6600af03f8c800000000',
       founderKeyHex:
-        '0352eb18befb145fef4b5c24513608183d7c3d8004d5fcad9e0e6dc2e89a0af6ae',
+        '02070d174561688500aac733116dbe70c5ab7480559d25e1c040f480491870c8ba',
       founderKeyHashHex:
-        'cacedcee9bc28a37b36718ea210fcf7caac182cdb66cc17fafb6027478a221c8',
-      founderKeyHashInt: 2023891400,
-      projectIdDeriviation: 1011945700,
-      projectId: 'angor1qg2pvel3j8ka62dwvmlytv6hwkz7hmk2mms7qll',
-      nPub: 'c749d81fc42037e5b9f7b32ae266cbce75019ce6771be6877d3c509e97e39c14',
-      addressOnFeeOutput: 'tb1qg2pvel3j8ka62dwvmlytv6hwkz7hmk2m0ncfee',
-      txid: '00b78119bb6eff9f64b2d29948ddd830f405b18dfdb802a3ec2df4eacfcd1f40',
+        '68828edc1c6312c915c8967475be57f42d45764105af8216f2da7170d033240a',
+      founderKeyHashInt: 3493012490,
+      projectIdDeriviation: 1746506245,
+      projectId: 'angor1qzkfpckm2vnhdvfcwr7vdhwt7ns3rd95gr0age0',
+      nostrEventId: '0f2d8db8568bd3e12bdab1faa217fffc80459053967eff8bde0a65f14e2b7079',
+      addressOnFeeOutput: 'tb1quc59k4kt0nv62xhj72xtqfmzk55cexxmae8lyc',
+      txid: '0d28976a42bf7618ad9470cf0202e2eb06d6072e75e139eab012a160b7b480aa',
       blockHeight: 40000,
     };
 
@@ -154,11 +154,11 @@ describe('AngorTransactionDecoder', () => {
 
         const {
           projectId,
-          nPub,
           addressOnFeeOutput,
           founderKeyHex,
           txid,
           blockHeight,
+          nostrEventId
         } = data;
 
         await angorDecoder.decodeAndStoreProjectCreationTransaction(
@@ -168,12 +168,17 @@ describe('AngorTransactionDecoder', () => {
 
         expect(setProjectSpy).toHaveBeenCalledWith(
           projectId,
-          nPub,
           addressOnFeeOutput,
           transactionStatus,
           founderKeyHex,
           txid,
-          blockHeight
+          blockHeight,
+          nostrEventId
+        );
+
+        expect(updateInvestmentStatusSpy).toHaveBeenCalledWith(
+          addressOnFeeOutput,
+          transactionStatus
         );
 
         expect(updateInvestmentStatusSpy).toHaveBeenCalledWith(
@@ -188,10 +193,10 @@ describe('AngorTransactionDecoder', () => {
         jest.restoreAllMocks();
       });
 
-      it('should return 2 chunks', () => {
+      it('should return 3 chunks', () => {
         const chunks = angorDecoder['decompileProjectCreationOpReturnScript']();
 
-        expect(chunks.length).toEqual(2);
+        expect(chunks.length).toEqual(3);
 
         chunks.forEach((chunk) => expect(typeof chunk).toEqual('string'));
       });
@@ -290,9 +295,9 @@ describe('AngorTransactionDecoder', () => {
       });
     });
 
-    describe('getNostrPubKey', () => {
-      it('should return Nostr public key', () => {
-        expect(angorDecoder['getNostrPubKey']()).toEqual(data.nPub);
+    describe('getNostrEventId', () => {
+      it('should return nostrEventId', () => {
+        expect(angorDecoder['getNostrEventId']()).toEqual(data.nostrEventId);
       });
     });
   });
@@ -339,10 +344,10 @@ describe('AngorTransactionDecoder', () => {
           .mockImplementation(() =>
             Promise.resolve({
               founder_key: '',
-              npub: '',
               id: '',
               created_on_block: 1,
               txid: '',
+              nostr_event_id: ''
             })
           );
 

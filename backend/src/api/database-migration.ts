@@ -31,7 +31,6 @@ class DatabaseMigration {
    */
   public async $initializeOrMigrateDatabase(): Promise<void> {
     logger.debug('MIGRATIONS: Running migrations');
-
     await this.$printDatabaseVersion();
 
     // First of all, if the `state` database does not exist, create it so we can track migration version
@@ -1285,11 +1284,11 @@ class DatabaseMigration {
   private getCreateAngorProjectsTableQuery(): string {
     return `CREATE TABLE IF NOT EXISTS angor_projects (
       id CHAR(45) NOT NULL,
-      npub CHAR(64) NOT NULL,
       address_on_fee_output CHAR(51) NOT NULL,
       creation_transaction_status VARCHAR(10) NOT NULL,
       created_on_block INT(10),
       txid VARCHAR(64) NOT NULL,
+      nostr_event_id VARCHAR(64),
       founder_key VARCHAR(66) NOT NULL,
       PRIMARY KEY (id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;

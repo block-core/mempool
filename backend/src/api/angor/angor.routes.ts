@@ -7,17 +7,17 @@ import { fetchAngorVouts, computeAdvancedStats, computeStatsTally } from './ango
 
 interface ProjectsPayloadItem {
   founderKey: string;
-  nostrPubKey: string;
   projectIdentifier: string;
   createdOnBlock: number;
   trxId: string;
+  nostrEventId: string;
 }
 interface ProjectPayloadItem {
   founderKey: string;
-  nostrPubKey: string;
   projectIdentifier: string;
   createdOnBlock: number;
   trxId: string;
+  nostrEventId: string;
   totalInvestmentsCount: number;
 }
 
@@ -150,14 +150,14 @@ class AngorRoutes {
     const payload: ProjectsPayloadItem[] = projects
       .map((project) => ({
         founderKey: project.founder_key,
-        nostrPubKey: project.npub,
         projectIdentifier: project.id,
         createdOnBlock: project.created_on_block,
         trxId: project.txid,
+        nostrEventId: project.nostr_event_id
       }))
       .sort(
         (p1: ProjectsPayloadItem, p2: ProjectsPayloadItem) =>
-          p1.createdOnBlock - p2.createdOnBlock
+          p2.createdOnBlock - p1.createdOnBlock
       );
 
     // Amount of confirmed Angor projects.
@@ -197,10 +197,10 @@ class AngorRoutes {
     // Adjust DB data to confirm ProjectsPayloadItem interface.
     const payload: ProjectPayloadItem = {
       founderKey: project.founder_key,
-      nostrPubKey: project.npub,
       projectIdentifier: project.id,
       createdOnBlock: project.created_on_block,
       trxId: project.txid,
+      nostrEventId: project.nostr_event_id,
       totalInvestmentsCount: project.investments_count,
     };
 
@@ -235,7 +235,6 @@ class AngorRoutes {
         const spentVouts: AngorVout[][] = await Promise.all(
           investments.map(async (investment) => {
             //fetch transaction for each investment, with full info about vouts
-            console.log('investment: ', investment);
             const fullTr = await transactionUtils.$getTransactionExtended(
               investment.transaction_id,
               true,
@@ -351,7 +350,6 @@ class AngorRoutes {
         return;
       }
     }
-
     // Angor project investments.
     const projectInvestments =
       await AngorProjectRepository.$getProjectInvestments(
@@ -361,7 +359,8 @@ class AngorRoutes {
       );
 
     // Adjust DB data to confirm ProjectInvestmentPayloadItem interface.
-    const payload: ProjectInvestmentPayloadItem[] = projectInvestments
+    const payload: ProjectInvestmentPayloadItem[] = projectInvestments.length > 0
+      ? projectInvestments
       .map((investment) => ({
         investorPublicKey: investment.investor_npub,
         totalAmount: investment.amount_sats,
@@ -369,7 +368,8 @@ class AngorRoutes {
         hashOfSecret: investment.secret_hash,
         isSeeder: investment.is_seeder,
       }))
-      .sort();
+      .sort()
+      : [];
 
     // Amount of confirmed Angor project investments.
     const investmentsCount =

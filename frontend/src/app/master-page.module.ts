@@ -90,6 +90,11 @@ const routes: Routes = [
         loadChildren: () => import('@app/docs/docs.module').then(m => m.DocsModule)
       },
       {
+        path: 'angor',
+        loadChildren: () => import('@app/angor/angor.module').then(m => m.AngorModule),
+        data: { preload: true },
+      },
+      {
         path: 'lightning',
         loadChildren: () => import('@app/lightning/lightning.module').then(m => m.LightningModule),
         data: { preload: browserWindowEnv && browserWindowEnv.LIGHTNING === true, networks: ['bitcoin'] },
