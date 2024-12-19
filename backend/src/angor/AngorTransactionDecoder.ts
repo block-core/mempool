@@ -357,8 +357,9 @@ export class AngorTransactionDecoder {
    * @returns an integer that is derived from integer representation of founder key hash.
    */
   private getProjectIdDerivation(founderKeyHashInt: number): number {
-    // The max size of bip32 derivation range is 2,147,483,648 (2^31) the max number of uint is 4,294,967,295 so we must to divide by 2 and round it to the floor.
-    const retention = Math.floor(founderKeyHashInt / 2);
+    const intMaxValue = 0x7FFFFFFF;
+
+    const retention = founderKeyHashInt & intMaxValue;
 
     if (retention > Math.pow(2, 31)) {
       throw new Error(
