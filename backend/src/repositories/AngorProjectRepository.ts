@@ -53,6 +53,7 @@ class AngorProjectRepository {
     nostrEventId?: string
   ): Promise<void> {
     try {
+      logger.debug(`nostrEventId=${nostrEventId}`);
       const query = `INSERT INTO angor_projects
           (
             id,
