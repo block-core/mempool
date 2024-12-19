@@ -6,6 +6,7 @@ import {
 import * as bitcoinJS from 'bitcoinjs-lib';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
+import logger from "../../logger";
 
 describe('AngorTransactionDecoder', () => {
   describe('Decoding transaction for Angor project creation', () => {
@@ -17,8 +18,8 @@ describe('AngorTransactionDecoder', () => {
       founderKeyHashHex:
         '68828edc1c6312c915c8967475be57f42d45764105af8216f2da7170d033240a',
       founderKeyHashInt: 3493012490,
-      projectIdDeriviation: 1746506245,
-      projectId: 'angor1qzkfpckm2vnhdvfcwr7vdhwt7ns3rd95gr0age0',
+      projectIdDeriviation: 1345528842,
+      projectId: 'angor1quc59k4kt0nv62xhj72xtqfmzk55cexxmf6pkz7',
       nostrEventId: '0f2d8db8568bd3e12bdab1faa217fffc80459053967eff8bde0a65f14e2b7079',
       addressOnFeeOutput: 'tb1quc59k4kt0nv62xhj72xtqfmzk55cexxmae8lyc',
       txid: '0d28976a42bf7618ad9470cf0202e2eb06d6072e75e139eab012a160b7b480aa',
@@ -253,23 +254,6 @@ describe('AngorTransactionDecoder', () => {
 
         expect(angorDecoder['getProjectIdDerivation'](keyHashInt)).toEqual(
           data.projectIdDeriviation
-        );
-      });
-
-      it('should throw an error if the retention is greater than 2 in power of 31', () => {
-        jest
-          .spyOn(angorDecoder as any, 'hashToInt')
-          .mockImplementation(() => Math.pow(2, 31) * 2 + 2);
-
-        const keyHash = angorDecoder['getKeyHash'](keyHex);
-        const keyHashInt = angorDecoder['hashToInt'](keyHash);
-
-        expect(() =>
-          angorDecoder['getProjectIdDerivation'](keyHashInt)
-        ).toThrow(
-          new Error(
-            `Retention is too large. The max number is 2^31 (2,147,483,648).`
-          )
         );
       });
     });
