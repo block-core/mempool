@@ -6,7 +6,6 @@ import {
 import * as bitcoinJS from 'bitcoinjs-lib';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
-import logger from "../../logger";
 
 describe('AngorTransactionDecoder', () => {
   describe('Decoding transaction for Angor project creation', () => {
