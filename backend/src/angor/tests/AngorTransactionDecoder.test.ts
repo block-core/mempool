@@ -179,6 +179,11 @@ describe('AngorTransactionDecoder', () => {
           addressOnFeeOutput,
           transactionStatus
         );
+
+        expect(updateInvestmentStatusSpy).toHaveBeenCalledWith(
+          addressOnFeeOutput,
+          transactionStatus
+        );
       });
     });
 

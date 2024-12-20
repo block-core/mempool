@@ -117,7 +117,7 @@ services:
       LETSENCRYPT_HOST: explorer.angor.io
       LETSENCRYPT_EMAIL: admin@blockcore.net
       ASPNETCORE_URLS: http://+:8080
-    image: mempool/frontend:latest
+    image: blockcore/mempool-frontend:latest
     user: "0:1000"
     restart: always
     stop_grace_period: 1m
