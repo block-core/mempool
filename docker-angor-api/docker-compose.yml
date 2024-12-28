@@ -54,6 +54,7 @@ services:
     environment:
       MEMPOOL_BACKEND: "esplora"
       ESPLORA_REST_API_URL: "http://mempool-electrs:3003"
+      ESPLORA_REQUEST_TIMEOUT: "50000"
       ELECTRUM_HOST: "mempool-electrs"
       ELECTRUM_PORT: "5001"
       ELECTRUM_TLS_ENABLED: "false"
