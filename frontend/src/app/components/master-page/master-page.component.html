@@ -90,7 +90,7 @@
       <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" id="btn-pools" *ngIf="stateService.env.MINING_DASHBOARD">
         <a class="nav-link" [routerLink]="['/mining' | relativeUrl]" (click)="collapse()"><fa-icon [icon]="['fas', 'hammer']" [fixedWidth]="true" i18n-title="mining.mining-dashboard" title="Mining Dashboard"></fa-icon></a>
       </li>
-      <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" id="btn-angor">
+      <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" id="btn-angor" *ngIf="stateService.isAngorEnabled()">
         <a class="nav-link" [routerLink]="['/angor' | relativeUrl]" (click)="collapse()"><fa-icon [icon]="['fas', 'boxes-stacked']" [fixedWidth]="true" title="Angor Projects"></fa-icon>
         </a>
       </li>
