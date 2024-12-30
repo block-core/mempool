@@ -350,7 +350,7 @@ class Server {
     if (!config.MEMPOOL.OFFICIAL) {
       aboutRoutes.initRoutes(this.app);
     }
-    if (config.DATABASE.ENABLED) {
+    if (config.DATABASE.ENABLED && config.ANGOR.ENABLED) {
       angorRoutes.initRoutes(this.app);
     }
 

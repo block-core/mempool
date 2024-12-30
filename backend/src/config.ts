@@ -165,6 +165,9 @@ interface IConfig {
   WALLETS: {
     ENABLED: boolean;
     WALLETS: string[];
+  },
+  ANGOR: {
+    ENABLED: boolean;
   }
 }
 
@@ -332,6 +335,9 @@ const defaults: IConfig = {
     'ENABLED': false,
     'WALLETS': [],
   },
+  'ANGOR': {
+    'ENABLED': false
+  }
 };
 
 class Config implements IConfig {
@@ -354,6 +360,7 @@ class Config implements IConfig {
   REDIS: IConfig['REDIS'];
   FIAT_PRICE: IConfig['FIAT_PRICE'];
   WALLETS: IConfig['WALLETS'];
+  ANGOR: IConfig['ANGOR'];
 
   constructor() {
     const configs = this.merge(configFromFile, defaults);
@@ -376,6 +383,7 @@ class Config implements IConfig {
     this.REDIS = configs.REDIS;
     this.FIAT_PRICE = configs.FIAT_PRICE;
     this.WALLETS = configs.WALLETS;
+    this.ANGOR = configs.ANGOR;
   }
 
   merge = (...objects: object[]): IConfig => {

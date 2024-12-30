@@ -69,6 +69,7 @@ services:
       STATISTICS_ENABLED: "true"
       MEMPOOL_STDOUT_LOG_MIN_PRIORITY: "debug"
       MEMPOOL_INDEXING_BLOCKS_AMOUNT: -1
+      ANGOR_ENABLED: "true"
       VIRTUAL_HOST: indexer.angor.io
       VIRTUAL_PORT: 8999
       VIRTUAL_PROTO: http

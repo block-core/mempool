@@ -206,9 +206,9 @@ class Indexer {
 
       // Index transactions related to Angor projects.
       // This operation should be done once when initial indexing is complete.
-      await this.indexAngorTransactions();
-
-
+      if (config.ANGOR.ENABLED) {
+        await this.indexAngorTransactions();
+      }
       blocks.$classifyBlocks();
     } catch (e) {
       this.indexerRunning = false;

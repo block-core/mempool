@@ -159,6 +159,9 @@ __FIAT_PRICE_ENABLED__=${FIAT_PRICE_ENABLED:=true}
 __FIAT_PRICE_PAID__=${FIAT_PRICE_PAID:=false}
 __FIAT_PRICE_API_KEY__=${FIAT_PRICE_API_KEY:=""}
 
+# ANGOR
+__ANGOR_ENABLED__=${ANGOR_ENABLED:=false}
+
 mkdir -p "${__MEMPOOL_CACHE_DIR__}"
 
 sed -i "s!__MEMPOOL_NETWORK__!${__MEMPOOL_NETWORK__}!g" mempool-config.json
@@ -309,5 +312,8 @@ sed -i "s!__REDIS_BATCH_QUERY_BASE_SIZE__!${__REDIS_BATCH_QUERY_BASE_SIZE__}!g" 
 sed -i "s!__FIAT_PRICE_ENABLED__!${__FIAT_PRICE_ENABLED__}!g" mempool-config.json
 sed -i "s!__FIAT_PRICE_PAID__!${__FIAT_PRICE_PAID__}!g" mempool-config.json
 sed -i "s!__FIAT_PRICE_API_KEY__!${__FIAT_PRICE_API_KEY__}!g" mempool-config.json
+
+# ANGOR
+sed -i "s! __ANGOR_ENABLED__!${__ANGOR_ENABLED__}!g" mempool-config.json
 
 node /backend/package/index.js

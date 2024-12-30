@@ -44,7 +44,7 @@ class Mempool {
   private mempoolProtection = 0;
   private latestTransactions: any[] = [];
 
-  private ESPLORA_MISSING_TX_WARNING_THRESHOLD = 100; 
+  private ESPLORA_MISSING_TX_WARNING_THRESHOLD = 100;
   private SAMPLE_TIME = 10000; // In ms
   private timer = new Date().getTime();
   private missingTxCount = 0;
@@ -383,27 +383,29 @@ class Mempool {
 
     // Use Angor decoder to identify transaction related to Angor projects that
     // were added to the mempool.
-    for (const transaction of newTransactions) {
-      const { txid } = transaction;
+    if (config.ANGOR.ENABLED) {
+      for (const transaction of newTransactions) {
+        const { txid } = transaction;
 
-      const transactionHex = await bitcoinApi.$getTransactionHex(txid);
+        const transactionHex = await bitcoinApi.$getTransactionHex(txid);
 
-      const angorDecoder = new AngorTransactionDecoder(
-        transactionHex,
-        AngorSupportedNetworks.Testnet
-      );
+        const angorDecoder = new AngorTransactionDecoder(
+          transactionHex,
+          AngorSupportedNetworks.Testnet
+        );
 
-      await angorDecoder
-        .decodeAndStoreProjectCreationTransaction(
-          AngorTransactionStatus.Pending
-        )
-        .catch(async () => {
-          await angorDecoder
-            .decodeAndStoreInvestmentTransaction(AngorTransactionStatus.Pending)
-            .catch(() => {
-              // Ignore error.
-            });
-        });
+        await angorDecoder
+          .decodeAndStoreProjectCreationTransaction(
+            AngorTransactionStatus.Pending
+          )
+          .catch(async () => {
+            await angorDecoder
+              .decodeAndStoreInvestmentTransaction(AngorTransactionStatus.Pending)
+              .catch(() => {
+                // Ignore error.
+              });
+          });
+      }
     }
 
     if (!this.inSync && transactions.length === newMempoolSize) {

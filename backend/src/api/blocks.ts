@@ -976,35 +976,38 @@ class Blocks {
         // New block is saved to the DB.
         // Decode block transaction with Angor decoder to identify transactions
         // related to Angor projects.
-        const transactionIds = await bitcoinApi.$getTxIdsForBlock(blockHash);
 
-        for (const transactionId of transactionIds) {
-          const transactionHex = await bitcoinApi.$getTransactionHex(
-            transactionId
-          );
+        if (config.ANGOR.ENABLED) {
+          const transactionIds = await bitcoinApi.$getTxIdsForBlock(blockHash);
 
-          const angorDecoder = new AngorTransactionDecoder(
-            transactionHex,
-            AngorSupportedNetworks.Testnet
-          );
+          for (const transactionId of transactionIds) {
+            const transactionHex = await bitcoinApi.$getTransactionHex(
+              transactionId
+            );
 
-          await angorDecoder
-            .decodeAndStoreProjectCreationTransaction(
-              AngorTransactionStatus.Confirmed,
-              blockExtended.height
-            )
-            .catch(async () => {
-              await angorDecoder
-                .decodeAndStoreInvestmentTransaction(
-                  AngorTransactionStatus.Confirmed,
-                  blockExtended.height
-                )
-                .catch(() => {
-                  // Ignore error.
-                });
-            });
+            const angorDecoder = new AngorTransactionDecoder(
+              transactionHex,
+              AngorSupportedNetworks.Testnet
+            );
+
+            await angorDecoder
+              .decodeAndStoreProjectCreationTransaction(
+                AngorTransactionStatus.Confirmed,
+                blockExtended.height
+              )
+              .catch(async () => {
+                await angorDecoder
+                  .decodeAndStoreInvestmentTransaction(
+                    AngorTransactionStatus.Confirmed,
+                    blockExtended.height
+                  )
+                  .catch(() => {
+                    // Ignore error.
+                  });
+              });
+          }
         }
-
+        
         if (!fastForwarded) {
           let lastestPriceId;
           try {

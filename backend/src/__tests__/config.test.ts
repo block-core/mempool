@@ -159,6 +159,10 @@ describe('Mempool Backend Config', () => {
         PAID: false,
         API_KEY: '',
       });
+
+      expect(config.ANGOR).toStrictEqual({
+        ENABLED: false
+      });
     });
   });
 
