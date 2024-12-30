@@ -92,7 +92,7 @@ const routes: Routes = [
       {
         path: 'angor',
         loadChildren: () => import('@app/angor/angor.module').then(m => m.AngorModule),
-        data: { preload: true },
+        data: { preload: browserWindowEnv && browserWindowEnv.ANGOR_ENABLED === true },
       },
       {
         path: 'lightning',

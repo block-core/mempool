@@ -84,6 +84,7 @@ export interface Env {
   SERVICES_API?: string;
   customize?: Customization;
   PROD_DOMAINS: string[];
+  ANGOR_ENABLED: boolean;
 }
 
 const defaultEnv: Env = {
@@ -125,6 +126,7 @@ const defaultEnv: Env = {
   'ADDITIONAL_CURRENCIES': false,
   'SERVICES_API': 'https://mempool.space/api/v1/services',
   'PROD_DOMAINS': [],
+  'ANGOR_ENABLED': false
 };
 
 @Injectable({
@@ -334,7 +336,7 @@ export class StateService {
     this.hideAudit.subscribe((hide) => {
       this.storageService.setValue('audit-preference', hide ? 'hide' : 'show');
     });
-    
+
     const fiatPreference = this.storageService.getValue('fiat-preference');
     this.fiatCurrency$ = new BehaviorSubject<string>(fiatPreference || 'USD');
 
@@ -418,6 +420,10 @@ export class StateService {
     return this.env.LIGHTNING && this.lightningNetworks.includes(this.network);
   }
 
+  isAngorEnabled() {
+    return this.env.ANGOR_ENABLED;
+  }
+
   getHiddenProp(){
     const prefixes = ['webkit', 'moz', 'ms', 'o'];
     if ('hidden' in document) { return 'hidden'; }
@@ -477,6 +483,6 @@ export class StateService {
   focusSearchInputDesktop() {
     if (!hasTouchScreen()) {
       this.searchFocus$.next(true);
-    }    
+    }
   }
 }

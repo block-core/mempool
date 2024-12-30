@@ -305,7 +305,7 @@ export class SearchFormComponent implements OnInit {
           (data) => { this.navigate('/block/', data.hash); },
           (error) => { console.log(error); this.isSearching = false; }
         );
-      } else if (this.regexAngor.test(searchText)) {
+      } else if (this.stateService.isAngorEnabled() && this.regexAngor.test(searchText)) {
         this.navigate('/angor/projects/', searchText);
       } else {
         this.isSearching = false;
