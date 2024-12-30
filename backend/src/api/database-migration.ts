@@ -107,18 +107,20 @@ class DatabaseMigration {
 
     await this.$executeQuery(this.getCreateElementsTableQuery(), await this.$checkIfTableExists('elements_pegs'));
     await this.$executeQuery(this.getCreateStatisticsQuery(), await this.$checkIfTableExists('statistics'));
-    await this.$executeQuery(
-      this.getCreateAngorProjectsTableQuery(),
-      await this.$checkIfTableExists('angor_projects')
-    );
-    await this.$executeQuery(
-      this.getCreateAngorInvestmentsTableQuery(),
-      await this.$checkIfTableExists('angor_investments')
-    );
-    await this.$executeQuery(
-      this.getCreateAngorBlocksTableQuery(),
-      await this.$checkIfTableExists('angor_blocks')
-    );
+    if (config.ANGOR.ENABLED) {
+      await this.$executeQuery(
+        this.getCreateAngorProjectsTableQuery(),
+        await this.$checkIfTableExists('angor_projects')
+      );
+      await this.$executeQuery(
+        this.getCreateAngorInvestmentsTableQuery(),
+        await this.$checkIfTableExists('angor_investments')
+      );
+      await this.$executeQuery(
+        this.getCreateAngorBlocksTableQuery(),
+        await this.$checkIfTableExists('angor_blocks')
+      );
+    }
     if (databaseSchemaVersion < 2 && this.statisticsAddedIndexed === false) {
       await this.$executeQuery(`CREATE INDEX added ON statistics (added);`);
       await this.updateToSchemaVersion(2);
