@@ -111,6 +111,7 @@ services:
       FRONTEND_HTTP_PORT: "8080"
       BACKEND_MAINNET_HTTP_HOST: "mempool_api"
       LIGHTNING: "false"
+      ANGOR_ENABLED: "true"
       VIRTUAL_HOST: explorer.angor.io
       VIRTUAL_PORT: 8080
       VIRTUAL_PROTO: http

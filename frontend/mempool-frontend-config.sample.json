@@ -28,5 +28,5 @@
   "ACCELERATOR_BUTTON": true,
   "PUBLIC_ACCELERATIONS": false,
   "SERVICES_API": "https://mempool.space/api/v1/services",
-  "ANGOR_ENABLED": false
+  "ANGOR_ENABLED": true
 }
