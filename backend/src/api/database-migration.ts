@@ -46,6 +46,22 @@ class DatabaseMigration {
       logger.debug('MIGRATIONS: `state` table initialized.');
     }
 
+    // Create Angor tables
+    if (config.ANGOR.ENABLED) {
+      await this.$executeQuery(
+        this.getCreateAngorProjectsTableQuery(),
+        await this.$checkIfTableExists('angor_projects')
+      );
+      await this.$executeQuery(
+        this.getCreateAngorInvestmentsTableQuery(),
+        await this.$checkIfTableExists('angor_investments')
+      );
+      await this.$executeQuery(
+        this.getCreateAngorBlocksTableQuery(),
+        await this.$checkIfTableExists('angor_blocks')
+      );
+    }
+
     let databaseSchemaVersion = 0;
     try {
       databaseSchemaVersion = await this.$getSchemaVersionFromDatabase();
@@ -101,26 +117,13 @@ class DatabaseMigration {
    * Create all missing tables
    */
   private async $createMissingTablesAndIndexes(databaseSchemaVersion: number) {
+    logger.debug('create missing tables runs');
     await this.$setStatisticsAddedIndexedFlag(databaseSchemaVersion);
 
     const isBitcoin = ['mainnet', 'testnet', 'signet'].includes(config.MEMPOOL.NETWORK);
 
     await this.$executeQuery(this.getCreateElementsTableQuery(), await this.$checkIfTableExists('elements_pegs'));
     await this.$executeQuery(this.getCreateStatisticsQuery(), await this.$checkIfTableExists('statistics'));
-    if (config.ANGOR.ENABLED) {
-      await this.$executeQuery(
-        this.getCreateAngorProjectsTableQuery(),
-        await this.$checkIfTableExists('angor_projects')
-      );
-      await this.$executeQuery(
-        this.getCreateAngorInvestmentsTableQuery(),
-        await this.$checkIfTableExists('angor_investments')
-      );
-      await this.$executeQuery(
-        this.getCreateAngorBlocksTableQuery(),
-        await this.$checkIfTableExists('angor_blocks')
-      );
-    }
     if (databaseSchemaVersion < 2 && this.statisticsAddedIndexed === false) {
       await this.$executeQuery(`CREATE INDEX added ON statistics (added);`);
       await this.updateToSchemaVersion(2);
