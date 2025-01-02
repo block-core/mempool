@@ -229,25 +229,18 @@ class Indexer {
    * Index transactions related to Angor projects.
    */
   public async indexAngorTransactions(): Promise<void> {
+    // Get latest indexed block.
+    const latestIndexedBlockHeight = await AngorBlocksRepository.$getLatestIndexedBlock();
     // All indexed blocks.
-    const indexedBlocks = await BlocksRepository.$getIndexedBlocks();
+    const indexedBlocks = latestIndexedBlockHeight
+      ? await BlocksRepository.$getIndexedBlocksFromHeight(latestIndexedBlockHeight + 1)
+      : await BlocksRepository.$getIndexedBlocks('ASC');
     // Sort indexed blocks by height, the lowest height should be in the beginning.
     // It is necessary to index transactions for project creations before
     // investment transactions.
-    const sortedBlocks = indexedBlocks.sort(
-      (
-        b1: { height: number; hash: string },
-        b2: { height: number; hash: string }
-      ) => b1.height - b2.height
-    );
 
-    for (const indexedBlock of sortedBlocks) {
+    for (const indexedBlock of indexedBlocks) {
       if (indexedBlock.height === 0) {
-        continue;
-      }
-
-      const alreadyIndexed = await AngorBlocksRepository.isBlockIndexed(indexedBlock.height, indexedBlock.hash);
-      if (alreadyIndexed) {
         continue;
       }
       // Transaction IDs in the block.
@@ -285,7 +278,7 @@ class Indexer {
               });
           });
       }
-      await AngorBlocksRepository.$markBlockAsIndexed(indexedBlock.height, indexedBlock.hash);
+      await AngorBlocksRepository.$updateLatestIndexedBlock(indexedBlock.height, indexedBlock.hash);
     }
 
     logger.info('Indexing Angor transactions completed.');

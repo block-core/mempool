@@ -1315,7 +1315,8 @@ class DatabaseMigration {
 
   private getCreateAngorBlocksTableQuery(): string {
     return `CREATE TABLE IF NOT EXISTS angor_blocks (
-      block_height INT PRIMARY KEY,
+      id INT NOT NULL PRIMARY KEY CHECK (id = 1),
+      block_height INT NOT NULL,
       block_hash CHAR(64) NOT NULL,
       indexed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;

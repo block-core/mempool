@@ -196,9 +196,9 @@ class BlocksRepository {
 
   /**
    * Save newly indexed data from core coinstatsindex
-   * 
-   * @param utxoSetSize 
-   * @param totalInputAmt 
+   *
+   * @param utxoSetSize
+   * @param totalInputAmt
    */
   public async $updateCoinStatsIndexData(blockHash: string, utxoSetSize: number,
     totalInputAmt: number
@@ -224,9 +224,9 @@ class BlocksRepository {
   /**
    * Update missing fee amounts fields
    *
-   * @param blockHash 
-   * @param feeAmtPercentiles 
-   * @param medianFeeAmt 
+   * @param blockHash
+   * @param feeAmtPercentiles
+   * @param medianFeeAmt
    */
   public async $updateFeeAmounts(blockHash: string, feeAmtPercentiles, medianFeeAmt) : Promise<void> {
     try {
@@ -810,13 +810,23 @@ class BlocksRepository {
   /**
    * Get a list of blocks that have been indexed
    */
-  public async $getIndexedBlocks(): Promise<{ height: number, hash: string }[]> {
+  public async $getIndexedBlocks(order = 'DESC'): Promise<{ height: number, hash: string }[]> {
     try {
-      const [rows] = await DB.query(`SELECT height, hash FROM blocks ORDER BY height DESC`) as RowDataPacket[][];
+      const [rows] = await DB.query(`SELECT height, hash FROM blocks ORDER BY height ${order}`, ) as RowDataPacket[][];
       return rows as { height: number, hash: string }[];
     } catch (e) {
       logger.err('Cannot generate block size and weight history. Reason: ' + (e instanceof Error ? e.message : e));
       throw e;
+    }
+  }
+
+  public async $getIndexedBlocksFromHeight(height: number): Promise<{ height: number, hash: string}[]> {
+    try {
+      const [rows] = await DB.query(`SELECT height, hash FROM blocks WHERE height >= ? ORDER BY height ASC`, [height]) as RowDataPacket[][];
+      return rows as {height: number, hash: string }[];
+    } catch (error) {
+      logger.err('Cannot generate block size and weight history. Reason: ' + (error instanceof Error ? error.message : error));
+      throw error;
     }
   }
 
@@ -949,9 +959,9 @@ class BlocksRepository {
 
   /**
    * Save indexed median fee to avoid recomputing it later
-   * 
-   * @param id 
-   * @param feePercentiles 
+   *
+   * @param id
+   * @param feePercentiles
    */
   public async $saveFeePercentilesForBlockId(id: string, feePercentiles: number[]): Promise<void> {
     try {
@@ -968,9 +978,9 @@ class BlocksRepository {
 
   /**
    * Save indexed effective fee statistics
-   * 
-   * @param id 
-   * @param feeStats 
+   *
+   * @param id
+   * @param feeStats
    */
   public async $saveEffectiveFeeStats(id: string, feeStats: EffectiveFeeStats): Promise<void> {
     try {
@@ -987,7 +997,7 @@ class BlocksRepository {
 
   /**
    * Save coinbase addresses
-   * 
+   *
    * @param id
    * @param addresses
    */
@@ -1006,7 +1016,7 @@ class BlocksRepository {
 
   /**
    * Save pool
-   * 
+   *
    * @param id
    * @param poolId
    */
@@ -1025,8 +1035,8 @@ class BlocksRepository {
 
   /**
    * Save block first seen time
-   * 
-   * @param id 
+   *
+   * @param id
    */
   public async $saveFirstSeenTime(id: string, firstSeen: number): Promise<void> {
     try {
@@ -1044,8 +1054,8 @@ class BlocksRepository {
   /**
    * Convert a mysql row block into a BlockExtended. Note that you
    * must provide the correct field into dbBlk object param
-   * 
-   * @param dbBlk 
+   *
+   * @param dbBlk
    */
   private async formatDbBlockIntoExtendedBlock(dbBlk: DatabaseBlock): Promise<BlockExtended> {
     const blk: Partial<BlockExtended> = {};
@@ -1065,7 +1075,7 @@ class BlocksRepository {
     blk.weight = dbBlk.weight;
     blk.previousblockhash = dbBlk.previousblockhash;
     blk.mediantime = dbBlk.mediantime;
-    
+
     // BlockExtension
     extras.totalFees = dbBlk.totalFees;
     extras.medianFee = dbBlk.medianFee;
