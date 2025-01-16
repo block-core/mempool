@@ -3,7 +3,9 @@ import config from '../../config';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
 import transactionUtils from '../transaction-utils';
-import { fetchAngorVouts, computeAdvancedStats, computeStatsTally } from './angor-stats';
+import { computeAdvancedStats, computeStatsTally } from './angor-stats';
+import bitcoinApi from '../bitcoin/bitcoin-api-factory';
+import { IEsploraApi } from "../bitcoin/esplora-api.interface";
 
 interface ProjectsPayloadItem {
   founderKey: string;
@@ -52,7 +54,9 @@ export interface AngorVout {
   value: number;
   spent: boolean;
   spendingTxId: string | undefined;
-  investmentTxId: string
+  investmentTxId: string;
+  isLast: boolean;
+  childVouts?: IEsploraApi.Vout[]
 }
 
 class AngorRoutes {
@@ -242,10 +246,37 @@ class AngorRoutes {
               false,
               true);
             // fetch and extract spent status and values for each vout.
-            const voutPromises = fullTr.vout.map((v, i) => {
-              return fetchAngorVouts(v, investment, i);
-            });
-            const vouts = await Promise.all(voutPromises);
+
+            const vouts = await Promise.all(
+              fullTr.vout
+                .filter((v) => v.scriptpubkey_type === 'v1_p2tr')
+                .map(async (v, i, arr) => {
+                  const voutOutspend = await bitcoinApi.$getOutspend(investment.transaction_id, i);
+                  const isLast = i === arr.length - 1;
+
+                  let childVouts: IEsploraApi.Vout[] = [];
+                  if (isLast && voutOutspend.spent && voutOutspend.txid) {
+                    const lastVoutTx = await transactionUtils.$getTransactionExtended(
+                      voutOutspend.txid,
+                      true,
+                      false,
+                      false,
+                      true
+                    );
+                    if (lastVoutTx.vout.length > 0) {
+                      childVouts = lastVoutTx.vout;
+                    }
+                  }
+                  return {
+                    value: v.value,
+                    spent: voutOutspend.spent,
+                    spendingTxId: voutOutspend.txid,
+                    investmentTxId: investment.transaction_id,
+                    isLast,
+                    ... childVouts.length > 0 && { childVouts }
+                  };
+                })
+            );
 
             // filter out vouts that are not spent and therefore dont have a spending transaction info
             return vouts.filter((vout): vout is AngorVout => {

@@ -1,19 +1,5 @@
-import { IEsploraApi } from '../bitcoin/esplora-api.interface';
-import { ProjectInvestment } from '../../repositories/AngorProjectRepository';
-import bitcoinApi from '../bitcoin/bitcoin-api-factory';
 import { AdvancedProjectStats, AngorVout, StatsTally } from './angor.routes';
-
-export async function fetchAngorVouts(vout: IEsploraApi.Vout, investment: ProjectInvestment, index: number): Promise<AngorVout | undefined> {
-  if (vout.scriptpubkey_type === 'v1_p2tr') {
-    const voutStatus = await bitcoinApi.$getOutspend(investment.transaction_id, index);
-    return {
-      value: vout.value,
-      spent: voutStatus.spent,
-      spendingTxId: voutStatus.txid,
-      investmentTxId: investment.transaction_id
-    };
-  }
-}
+import logger from "../../logger";
 
 /**
  * Iterates over each AngorVout and accumulates required information into a tally.
@@ -24,7 +10,10 @@ export async function fetchAngorVouts(vout: IEsploraApi.Vout, investment: Projec
 export function computeStatsTally(spentVouts: AngorVout[][]): Record<string, StatsTally> {
   return spentVouts.reduce((acc, v) => {
     v.forEach((vout) => {
-      const key = `${vout.investmentTxId}-${vout.spendingTxId}`;
+      const key = isSpentByFounder(vout)
+        ? `${vout.investmentTxId}-${vout.value}-${vout.spendingTxId}`
+        : `${vout.investmentTxId}-${vout.spendingTxId}`;
+
       if (!acc[key]) {
         acc[key] = { totalAmount: 0, numberOfTx: 0 };
       }
@@ -36,9 +25,13 @@ export function computeStatsTally(spentVouts: AngorVout[][]): Record<string, Sta
   }, {} as Record<string, StatsTally>);
 }
 
+function isSpentByFounder(vout: AngorVout): boolean {
+  return vout.isLast && !!vout.childVouts && vout.childVouts.length > 1;
+}
+
 /**
  * Iterates over the previously generated tally of investment and spending transactions
- * and computes amount spent by invedtors and founders.
+ * and computes amount spent by investors and founders.
  * @param statsTally
  * @return AdvancedProjectStats that can then be included in the project stats response.
  */
