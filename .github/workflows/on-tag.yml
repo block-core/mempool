@@ -103,6 +103,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --platform linux/amd64,linux/arm64 \
+          --progress=plain \
           --tag blockcore/mempool-${{ matrix.service }}:$TAG \
           --tag blockcore/mempool-${{ matrix.service }}:latest \
           --build-context rustgbt=./rust \
