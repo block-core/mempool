@@ -325,7 +325,7 @@ class ElectrsApi implements AbstractBitcoinApi {
   }
 
   $sendRawTransaction(rawTransaction: string): Promise<string> {
-    return this.failoverRouter.$post<string>('/tx', rawTransaction, 'string');
+    return this.failoverRouter.$post<string>('/tx', rawTransaction, 'text');
   }
 
   $testMempoolAccept(rawTransactions: string[], maxfeerate?: number): Promise<TestMempoolAcceptResult[]> {
