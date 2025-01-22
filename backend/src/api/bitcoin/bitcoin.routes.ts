@@ -57,7 +57,7 @@ class BitcoinRoutes {
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId', this.getTransaction)
       .post(config.MEMPOOL.API_URL_PREFIX + 'tx', this.$postTransaction)
       .post(config.MEMPOOL.API_URL_PREFIX + 'txs/test', this.$testTransactions)
-      .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/hex', this.getRawTransaction)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/hex', this.getTransactionHex)
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/status', this.getTransactionStatus)
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/outspends', this.getTransactionOutspends)
       .get(config.MEMPOOL.API_URL_PREFIX + 'txs/outspends', this.$getBatchedOutspends)
@@ -217,6 +217,20 @@ class BitcoinRoutes {
       const transaction: IEsploraApi.Transaction = await bitcoinApi.$getRawTransaction(req.params.txId, true);
       res.setHeader('content-type', 'text/plain');
       res.send(transaction.hex);
+    } catch (e) {
+      let statusCode = 500;
+      if (e instanceof Error && e.message && e.message.indexOf('No such mempool or blockchain transaction') > -1) {
+        statusCode = 404;
+      }
+      handleError(req, res, statusCode, e instanceof Error ? e.message : e);
+    }
+  }
+
+  private async getTransactionHex(req: Request, res: Response) {
+    try {
+      const transactionHex: string = await bitcoinApi.$getTransactionHex(req.params.txId);
+      res.setHeader('content-type', 'text/plain');
+      res.send(transactionHex);
     } catch (e) {
       let statusCode = 500;
       if (e instanceof Error && e.message && e.message.indexOf('No such mempool or blockchain transaction') > -1) {
