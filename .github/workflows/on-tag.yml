@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         service:
-          - frontend
+          #- frontend
           - backend
     runs-on: ubuntu-20.04
     timeout-minutes: 120
