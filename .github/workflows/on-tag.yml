@@ -23,33 +23,18 @@ jobs:
           - backend
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    name: Build ${{ matrix.service }} on ${{ matrix.runner-label }}
-    concurrency: 
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}-${{ matrix.runner-label }}
-      cancel-in-progress: true
-
+    name: Build and push to DockerHub
     steps:
-      - name: Runner check
-        id: runner-check
-        run: |
-          echo "Running on ${{ matrix.runner-label }}"
-          if [ "${{ matrix.runner-label }}" = "self-hosted" ]; then
-            echo "Using self-hosted runner"
-          else
-            echo "Using GitHub-hosted runner"
-          fi
-
-      # Skip swap configuration for GitHub-hosted runners
-      - name: Configure swap
-        if: matrix.runner-label == 'self-hosted'
+      # Workaround based on JonasAlfredsson/docker-on-tmpfs@v1.0.1
+      - name: Replace the current swap file
         shell: bash
         run: |
-          sudo swapoff /mnt/swapfile || true
-          sudo rm -f /mnt/swapfile || true
-          sudo fallocate -l 13G /mnt/swapfile || true
+          sudo swapoff /mnt/swapfile
+          sudo rm -v /mnt/swapfile
+          sudo fallocate -l 13G /mnt/swapfile
           sudo chmod 600 /mnt/swapfile
           sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile || true
+          sudo swapon /mnt/swapfile
 
       - name: Show current memory and swap status
         shell: bash
@@ -59,7 +44,6 @@ jobs:
           sudo swapon --show
 
       - name: Mount a tmpfs over /var/lib/docker
-        if: matrix.runner-label == 'self-hosted'
         shell: bash
         run: |
           if [ ! -d "/var/lib/docker" ]; then
@@ -69,30 +53,6 @@ jobs:
           sudo mount -t tmpfs -o size=10G tmpfs /var/lib/docker
           sudo systemctl restart docker
           sudo df -h | grep docker
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-            
-      - name: Cache Cargo index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/index
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-            
-      - name: Cache Cargo build
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-
 
       - name: Set env variables
         run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
@@ -107,7 +67,6 @@ jobs:
       - name: Login to Docker
         run: |
           docker login -u "sondreb" -p "${{secrets.DOCKER_KEY}}"
-
       - name: Checkout project
         uses: actions/checkout@v4
 
@@ -140,7 +99,6 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --platform linux/amd64,linux/arm64 \
-          --progress=plain \
           --tag blockcore/mempool-${{ matrix.service }}:$TAG \
           --tag blockcore/mempool-${{ matrix.service }}:latest \
           --build-context rustgbt=./rust \
