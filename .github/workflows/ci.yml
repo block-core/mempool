@@ -6,7 +6,7 @@ on:
 
 jobs:
   backend:
-    if: "!contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/')"
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/') }}
     strategy:
       matrix:
         node: ["20", "21"]
@@ -157,7 +157,7 @@ jobs:
 
   frontend:
     needs: cache
-    if: "!contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/')"
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/') }}
     strategy:
       matrix:
         node: ["20", "21"]
@@ -333,7 +333,7 @@ jobs:
 #          CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
 
   validate_docker_json:
-    if: "!contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/')"
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ops') && !contains(github.head_ref, 'ops/') }}
     runs-on: "ubuntu-latest"
     name: Validate generated backend Docker JSON
 
