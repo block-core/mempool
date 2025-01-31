@@ -21,12 +21,13 @@ jobs:
         service:
           - frontend
           - backend
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'github' && 'ubuntu-latest' || 'self-hosted' }}
     timeout-minutes: 120
     name: Build and push to DockerHub
     steps:
-      # Workaround based on JonasAlfredsson/docker-on-tmpfs@v1.0.1
+      # Only run these steps on GitHub-hosted runners
       - name: Replace the current swap file
+        if: ${{ github.repository_owner == 'github' }}
         shell: bash
         run: |
           sudo swapoff /mnt/swapfile
@@ -37,6 +38,7 @@ jobs:
           sudo swapon /mnt/swapfile
 
       - name: Show current memory and swap status
+        if: ${{ github.repository_owner == 'github' }}
         shell: bash
         run: |
           sudo free -h
@@ -44,6 +46,7 @@ jobs:
           sudo swapon --show
 
       - name: Mount a tmpfs over /var/lib/docker
+        if: ${{ github.repository_owner == 'github' }}
         shell: bash
         run: |
           if [ ! -d "/var/lib/docker" ]; then
@@ -54,6 +57,7 @@ jobs:
           sudo systemctl restart docker
           sudo df -h | grep docker
 
+      # Common steps for both environments
       - name: Set env variables
         run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
