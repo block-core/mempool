@@ -21,26 +21,40 @@ jobs:
         service:
           - frontend
           - backend
-      # Add fail-fast configuration
+        runner-label:
+          - ubuntu-latest
+          - self-hosted
       fail-fast: false
-    runs-on: ${{ github.event.repository.has_issues && 'ubuntu-latest' || 'self-hosted' }}
+    runs-on: ${{ matrix.runner-label }}
+    continue-on-error: ${{ matrix.runner-label == 'self-hosted' }}
     timeout-minutes: 120
-    name: Build and push to DockerHub
-    # Add concurrency group to prevent multiple runs
+    name: Build ${{ matrix.service }} on ${{ matrix.runner-label }}
     concurrency: 
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}-${{ matrix.runner-label }}
       cancel-in-progress: true
+
     steps:
-      # Workaround based on JonasAlfredsson/docker-on-tmpfs@v1.0.1
-      - name: Replace the current swap file
+      - name: Runner check
+        id: runner-check
+        run: |
+          echo "Running on ${{ matrix.runner-label }}"
+          if [ "${{ matrix.runner-label }}" = "self-hosted" ]; then
+            echo "Using self-hosted runner"
+          else
+            echo "Using GitHub-hosted runner"
+          fi
+
+      # Skip swap configuration for GitHub-hosted runners
+      - name: Configure swap
+        if: matrix.runner-label == 'self-hosted'
         shell: bash
         run: |
-          sudo swapoff /mnt/swapfile
-          sudo rm -v /mnt/swapfile
-          sudo fallocate -l 13G /mnt/swapfile
+          sudo swapoff /mnt/swapfile || true
+          sudo rm -f /mnt/swapfile || true
+          sudo fallocate -l 13G /mnt/swapfile || true
           sudo chmod 600 /mnt/swapfile
           sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile
+          sudo swapon /mnt/swapfile || true
 
       - name: Show current memory and swap status
         shell: bash
@@ -50,6 +64,7 @@ jobs:
           sudo swapon --show
 
       - name: Mount a tmpfs over /var/lib/docker
+        if: matrix.runner-label == 'self-hosted'
         shell: bash
         run: |
           if [ ! -d "/var/lib/docker" ]; then
@@ -60,7 +75,6 @@ jobs:
           sudo systemctl restart docker
           sudo df -h | grep docker
 
-   # Add caching for Cargo registry
       - name: Cache Cargo registry
         uses: actions/cache@v3
         with:
@@ -69,7 +83,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
             
-      # Add caching for Cargo index
       - name: Cache Cargo index
         uses: actions/cache@v3
         with:
@@ -78,7 +91,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-index-
             
-      # Add caching for Cargo build
       - name: Cache Cargo build
         uses: actions/cache@v3
         with:
@@ -96,9 +108,6 @@ jobs:
 
       - name: Add SHORT_SHA env property with commit short sha
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-
- #     - name: Login to Docker for building
- #       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Login to Docker
         run: |
