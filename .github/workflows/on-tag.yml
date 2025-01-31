@@ -25,6 +25,15 @@ jobs:
     timeout-minutes: 120
     name: Build and push to DockerHub
     steps:
+      - name: Validate runner
+        run: |
+          echo "Runner name: ${{ runner.name }}"
+          echo "Runner OS: ${{ runner.os }}"
+          if [ -z "${{ runner.name }}" ]; then
+            echo "Error: Runner not properly initialized"
+            exit 1
+          fi
+
       # Only run these steps on GitHub-hosted runners
       - name: Replace the current swap file
         if: ${{ github.repository_owner == 'github' }}
@@ -69,8 +78,25 @@ jobs:
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: Login to Docker
+        timeout-minutes: 5
         run: |
-          docker login -u "sondreb" -p "${{secrets.DOCKER_KEY}}"
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if docker login -u "sondreb" -p "${{secrets.DOCKER_KEY}}"; then
+              echo "Docker login successful"
+              break
+            else
+              echo "Docker login attempt $attempt failed"
+              if [ $attempt -eq $max_attempts ]; then
+                echo "All Docker login attempts failed"
+                exit 1
+              fi
+              sleep 10
+              ((attempt++))
+            fi
+          done
+
       - name: Checkout project
         uses: actions/checkout@v4
 
@@ -98,7 +124,12 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Run Docker buildx for ${{ matrix.service }} against tag
+        timeout-minutes: 60
+        continue-on-error: true
+        id: docker_build
         run: |
+          set -e
+          echo "Starting Docker build for ${{ matrix.service }}"
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
@@ -109,3 +140,11 @@ jobs:
           --build-context backend=./backend \
           --output "type=registry" ./${{ matrix.service }}/ \
           --build-arg commitHash=$SHORT_SHA
+
+      - name: Handle build failure
+        if: steps.docker_build.outcome == 'failure'
+        run: |
+          echo "Docker build failed for ${{ matrix.service }}"
+          echo "Cleaning Docker cache"
+          docker builder prune -f
+          exit 1
