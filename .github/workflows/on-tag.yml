@@ -2,7 +2,7 @@ name: Docker build on tag
 env:
   DOCKER_CLI_EXPERIMENTAL: enabled
   TAG_FMT: "^refs/tags/(((.?[0-9]+){3,4}))$"
-  DOCKER_BUILDKIT: 1
+  DOCKER_BUILDKIT: 0
   COMPOSE_DOCKER_CLI_BUILD: 0
 
 on:
@@ -21,12 +21,7 @@ jobs:
         service:
           - frontend
           - backend
-        runner-label:
-          - ubuntu-latest
-          - self-hosted
-      fail-fast: false
-    runs-on: ${{ matrix.runner-label }}
-    continue-on-error: ${{ matrix.runner-label == 'self-hosted' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 120
     name: Build ${{ matrix.service }} on ${{ matrix.runner-label }}
     concurrency: 
