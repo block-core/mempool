@@ -21,9 +21,15 @@ jobs:
         service:
           - frontend
           - backend
-    runs-on: [self-hosted, Linux, X64]
+      # Add fail-fast configuration
+      fail-fast: false
+    runs-on: ${{ github.event.repository.has_issues && 'ubuntu-latest' || 'self-hosted' }}
     timeout-minutes: 120
     name: Build and push to DockerHub
+    # Add concurrency group to prevent multiple runs
+    concurrency: 
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}
+      cancel-in-progress: true
     steps:
       # Workaround based on JonasAlfredsson/docker-on-tmpfs@v1.0.1
       - name: Replace the current swap file
