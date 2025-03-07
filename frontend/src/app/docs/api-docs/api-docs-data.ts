@@ -106,6 +106,430 @@ if __name__ == "__main__":
 
 export const restApiDocsData = [
   {
+    type: 'category',
+    title: 'Angor',
+    showConditions: ['', 'testnet', 'signet'],
+    category: 'Angor',
+    fragment: 'angor',
+  },
+  {
+    type: 'endpoint',
+    category: 'Angor',
+    httpRequestMethod: 'GET',
+    fragment: 'get-angor-projects',
+    title: 'GET Angor Projects',
+    description: {
+      default:
+        'Returns a list of Angor projects with pagination support. Maximum 50 projects per request.',
+    },
+    urlString: '/api/v1/query/Angor/projects',
+    showConditions: ['', 'testnet', 'signet'],
+    showJsExamples: showJsExamplesDefault,
+    codeExample: {
+      default: {
+        codeTemplate: {
+          commonJS: `
+          const { %{0}: { angor } } = mempoolJS();
+
+          const projects = await angor.getProjects({ limit: 10, offset: 0 });
+
+          document.getElementById("result").textContent = JSON.stringify(projects, undefined, 2);
+          `,
+          esModule: `
+          const { %{0}: { angor } } = mempoolJS();
+
+          const projects = await angor.getProjects({ limit: 10, offset: 0 });
+          console.log(projects);
+          `,
+          curl: `/api/v1/query/Angor/projects?limit=10&offset=0`,
+        },
+        codeSampleMainnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+              "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+              "createdOnBlock": 155587,
+              "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+              "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80"
+            }
+          ]`,
+        },
+        codeSampleTestnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+              "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+              "createdOnBlock": 155587,
+              "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+              "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80"
+            }
+          ]`,
+        },
+        codeSampleSignet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+              "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+              "createdOnBlock": 155587,
+              "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+              "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80"
+            }
+          ]`,
+        },
+      },
+    },
+  },
+  {
+    type: 'endpoint',
+    category: 'Angor',
+    httpRequestMethod: 'GET',
+    fragment: 'get-angor-project-by-id',
+    title: 'GET Angor Project by ID',
+    description: {
+      default: 'Returns details of a specific Angor project identified by its projectId.'
+    },
+    urlString: '/api/query/Angor/projects/{projectId}',
+    showConditions: ['', 'testnet', 'signet'],
+    showJsExamples: showJsExamplesDefault,
+    codeExample: {
+      default: {
+        codeTemplate: {
+          commonJS: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const project = await angor.getProjectById({ projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h' });
+
+            document.getElementById("result").textContent = JSON.stringify(project, undefined, 2);
+          `,
+          esModule: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const project = await angor.getProjectById({ projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h' });
+            console.log(project);
+          `,
+          curl: `/api/query/Angor/projects/angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h`,
+        },
+        codeSampleMainnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+            "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80",
+            "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+            "createdOnBlock": 155587,
+            "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+            "totalInvestmentsCount": 3
+          }`
+        },
+        codeSampleTestnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+            "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80",
+            "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+            "createdOnBlock": 155587,
+            "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+            "totalInvestmentsCount": 3
+          }`
+        },
+        codeSampleSignet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "founderKey": "03ee51ef7f30fb9f7ba5e4161f9adb2c57b0103f2170c4fd62ab2435eec33cbc6f",
+            "nostrEventId": "6f3cd1f2f5023f16054591b5cde7f812aa64fd46b16ee9e2457d2aecab346b80",
+            "projectIdentifier": "angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h",
+            "createdOnBlock": 155587,
+            "trxId": "ec7d5aab1131059c8a78d4b2f40bd7c8f4aae357dd1933f6c0ec0d36f9d81629",
+            "totalInvestmentsCount": 3
+          }`
+        }
+      }
+    }
+  },
+  {
+    type: 'endpoint',
+    category: 'Angor',
+    httpRequestMethod: 'GET',
+    fragment: 'get-angor-project-stats',
+    title: 'GET Angor Project Stats',
+    description: {
+      default: 'Returns statistics for a specific Angor project identified by its projectId.'
+    },
+    urlString: '/api/query/Angor/projects/{projectId}/stats',
+    showConditions: ['', 'testnet', 'signet'],
+    showJsExamples: showJsExamplesDefault,
+    codeExample: {
+      default: {
+        codeTemplate: {
+          commonJS: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const stats = await angor.getProjectStats({ projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h' });
+
+            document.getElementById("result").textContent = JSON.stringify(stats, undefined, 2);
+          `,
+          esModule: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const stats = await angor.getProjectStats({ projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h' });
+            console.log(stats);
+          `,
+          curl: `/api/query/Angor/projects/angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h/stats`,
+        },
+        codeSampleMainnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorCount": 3,
+            "amountInvested": 2600000000,
+            "amountSpentSoFarByFounder": 600000000,
+            "amountInPenalties": 2000000000,
+            "countInPenalties": 3
+          }`
+        },
+        codeSampleTestnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorCount": 3,
+            "amountInvested": 2600000000,
+            "amountSpentSoFarByFounder": 600000000,
+            "amountInPenalties": 2000000000,
+            "countInPenalties": 3
+          }`
+        },
+        codeSampleSignet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorCount": 3,
+            "amountInvested": 2600000000,
+            "amountSpentSoFarByFounder": 600000000,
+            "amountInPenalties": 2000000000,
+            "countInPenalties": 3
+          }`
+        }
+      }
+    }
+  },
+  {
+    type: 'endpoint',
+    category: 'Angor',
+    httpRequestMethod: 'GET',
+    fragment: 'get-angor-project-investments',
+    title: 'GET Angor Project Investments',
+    description: {
+      default: 'Returns a list of investments for a specific Angor project identified by its projectId with pagination support. Maximum 50 investments per request.'
+    },
+    urlString: '/api/query/Angor/projects/{projectId}/investments',
+    showConditions: ['', 'testnet', 'signet'],
+    showJsExamples: showJsExamplesDefault,
+    codeExample: {
+      default: {
+        codeTemplate: {
+          commonJS: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const investments = await angor.getProjectInvestments({
+              projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h',
+              limit: 10,
+              offset: 0
+            });
+
+            document.getElementById("result").textContent = JSON.stringify(investments, undefined, 2);
+          `,
+          esModule: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const investments = await angor.getProjectInvestments({
+              projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h',
+              limit: 10,
+              offset: 0
+            });
+            console.log(investments);
+          `,
+          curl: `/api/query/Angor/projects/angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h/investments?limit=10&offset=0`,
+        },
+        codeSampleMainnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "investorPublicKey": "0387c9b0159212b4ec7539cb1674ad71a29b992be1d1699ad47d62626bfb15fa39",
+              "totalAmount": 1100000000,
+              "transactionId": "0a97f8d67fb66efe8f59c258b9d6a04e9701e6f71a3ddccd2322ceda54a89513",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+              "totalAmount": 1300000000,
+              "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "02b3b093115ed931692f3c15b352ad345c5c03c7f4467a20543352a72e0701ed36",
+              "totalAmount": 200000000,
+              "transactionId": "cb87c0f46783301ece5634c85a91f7dc05b813761dd8fc49d2705a49369e4e28",
+              "hashOfSecret": "",
+              "isSeeder": false
+            }
+          ]`
+        },
+        codeSampleTestnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "investorPublicKey": "0387c9b0159212b4ec7539cb1674ad71a29b992be1d1699ad47d62626bfb15fa39",
+              "totalAmount": 1100000000,
+              "transactionId": "0a97f8d67fb66efe8f59c258b9d6a04e9701e6f71a3ddccd2322ceda54a89513",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+              "totalAmount": 1300000000,
+              "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "02b3b093115ed931692f3c15b352ad345c5c03c7f4467a20543352a72e0701ed36",
+              "totalAmount": 200000000,
+              "transactionId": "cb87c0f46783301ece5634c85a91f7dc05b813761dd8fc49d2705a49369e4e28",
+              "hashOfSecret": "",
+              "isSeeder": false
+            }
+          ]`
+        },
+        codeSampleSignet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `[
+            {
+              "investorPublicKey": "0387c9b0159212b4ec7539cb1674ad71a29b992be1d1699ad47d62626bfb15fa39",
+              "totalAmount": 1100000000,
+              "transactionId": "0a97f8d67fb66efe8f59c258b9d6a04e9701e6f71a3ddccd2322ceda54a89513",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+              "totalAmount": 1300000000,
+              "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+              "hashOfSecret": "",
+              "isSeeder": false
+            },
+            {
+              "investorPublicKey": "02b3b093115ed931692f3c15b352ad345c5c03c7f4467a20543352a72e0701ed36",
+              "totalAmount": 200000000,
+              "transactionId": "cb87c0f46783301ece5634c85a91f7dc05b813761dd8fc49d2705a49369e4e28",
+              "hashOfSecret": "",
+              "isSeeder": false
+            }
+          ]`
+        }
+      }
+    }
+  },
+  {
+    type: 'endpoint',
+    category: 'Angor',
+    httpRequestMethod: 'GET',
+    fragment: 'get-angor-project-investment-by-investor',
+    title: 'GET Angor Project Investment by Investor',
+    description: {
+      default: 'Returns details of a specific investment for an Angor project by investor public key.'
+    },
+    urlString: '/api/query/Angor/projects/{projectId}/investments/{investorPublicKey}',
+    showConditions: ['', 'testnet', 'signet'],
+    showJsExamples: showJsExamplesDefault,
+    codeExample: {
+      default: {
+        codeTemplate: {
+          commonJS: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const investment = await angor.getProjectInvestmentByInvestor({
+              projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h',
+              investorPublicKey: '03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55'
+            });
+
+            document.getElementById("result").textContent = JSON.stringify(investment, undefined, 2);
+          `,
+          esModule: `
+            const { %{0}: { angor } } = mempoolJS();
+
+            const investment = await angor.getProjectInvestmentByInvestor({
+              projectId: 'angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h',
+              investorPublicKey: '03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55'
+            });
+            console.log(investment);
+          `,
+          curl: `/api/query/Angor/projects/angor1qtp7e8yccmwdl3xjv634dd9edxc5jp3d2y36h8h/investments/03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55`,
+        },
+        codeSampleMainnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+            "totalAmount": 1300000000,
+            "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+            "hashOfSecret": "",
+            "isSeeder": false
+          }`
+        },
+        codeSampleTestnet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+            "totalAmount": 1300000000,
+            "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+            "hashOfSecret": "",
+            "isSeeder": false
+          }`
+        },
+        codeSampleSignet: {
+          esModule: [],
+          commonJS: [],
+          curl: [],
+          response: `{
+            "investorPublicKey": "03f6883c848b3116afa76a52e99423bde58cfe581979f0efeb38e979ae84b6bf55",
+            "totalAmount": 1300000000,
+            "transactionId": "4ea0cdd99bd2b3ebcd66c2f00f8663f2e8c9ff31320e46c05fc5f3d1b0fd265b",
+            "hashOfSecret": "",
+            "isSeeder": false
+          }`
+        }
+      }
+    }
+  },
+  {
     type: "category",
     category: "general",
     fragment: "general",
