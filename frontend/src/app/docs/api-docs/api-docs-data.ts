@@ -141,7 +141,7 @@ export const restApiDocsData = [
           const projects = await angor.getProjects({ limit: 10, offset: 0 });
           console.log(projects);
           `,
-          curl: `/api/v1/query/Angor/projects?limit=10&offset=0`,
+          curl: `/api/query/Angor/projects?limit=10&offset=0`,
         },
         codeSampleMainnet: {
           esModule: [],
