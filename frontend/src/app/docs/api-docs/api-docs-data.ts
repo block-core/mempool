@@ -122,7 +122,7 @@ export const restApiDocsData = [
       default:
         'Returns a list of Angor projects with pagination support. Maximum 50 projects per request.',
     },
-    urlString: '/api/v1/query/Angor/projects',
+    urlString: '/api/query/Angor/projects',
     showConditions: ['', 'testnet', 'signet'],
     showJsExamples: showJsExamplesDefault,
     codeExample: {
