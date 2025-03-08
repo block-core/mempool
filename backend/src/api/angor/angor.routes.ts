@@ -125,18 +125,18 @@ class AngorRoutes {
       }
     }
 
-    if (typeof queryOffset === 'string') {
+    if (typeof queryOffset === 'string' && queryOffset !== '') {
       // Convert query param into number.
-      offset = parseInt(queryOffset);
+      const parsedOffset = parseInt(queryOffset);
 
       // Validate offset query param.
-      if (Number.isNaN(offset)) {
+      if (Number.isNaN(parsedOffset)) {
         this.responseWithValidationError(res, {
-          limit: [`The value '${queryOffset}' is not valid.`],
+          offset: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
-      } else if (offset < 0) {
+      } else if (parsedOffset < 0) {
         this.responseWithValidationError(res, {
           offset: [
             'The field offset must be between 0 and 9.223372036854776E+18.',
@@ -145,6 +145,7 @@ class AngorRoutes {
 
         return;
       }
+      offset = parsedOffset;
     }
 
     // Angor projects.
@@ -360,14 +361,14 @@ class AngorRoutes {
       }
     }
 
-    if (typeof queryOffset === 'string') {
+    if (typeof queryOffset === 'string' && queryOffset !== '' && queryOffset !== '0') {
       // Convert query param into number.
       offset = parseInt(queryOffset);
 
       // Validate offset query param.
       if (Number.isNaN(offset)) {
         this.responseWithValidationError(res, {
-          limit: [`The value '${queryOffset}' is not valid.`],
+          offset: [`The value '${queryOffset}' is not valid.`],
         });
 
         return;
@@ -490,7 +491,7 @@ class AngorRoutes {
     let link = '<';
 
     // 1st pagination chunk.
-    const firstChunk = path + `?offset=${0}&limit=${limit}`;
+    const firstChunk = path + `?offset=0&limit=${limit}`;
 
     link += firstChunk;
     link += '>; rel="first"';
