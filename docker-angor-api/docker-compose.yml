@@ -15,7 +15,7 @@ volumes:
 services:
   node:
     container_name: btc-node
-    image: eugenenostrdev/bitcoin_signet:amd64
+    image: blockcore/bitcoin-angornet:latest
     mem_limit: 2048m
     cpus: 0.8
     healthcheck:
