@@ -987,7 +987,9 @@ class Blocks {
 
             const angorDecoder = new AngorTransactionDecoder(
               transactionHex,
-              AngorSupportedNetworks.Testnet
+              config.MEMPOOL.NETWORK === 'mainnet' 
+                ? AngorSupportedNetworks.Bitcoin 
+                : AngorSupportedNetworks.Testnet
             );
 
             await angorDecoder
