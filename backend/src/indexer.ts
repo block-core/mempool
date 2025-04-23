@@ -256,7 +256,9 @@ class Indexer {
 
         const angorDecoder = new AngorTransactionDecoder(
           transactionHex,
-          AngorSupportedNetworks.Testnet
+          config.MEMPOOL.NETWORK === 'mainnet' 
+            ? AngorSupportedNetworks.Bitcoin 
+            : AngorSupportedNetworks.Testnet
         );
 
         // Try to decode and store transaction as Angor project creation transaction.
