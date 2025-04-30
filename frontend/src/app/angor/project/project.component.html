@@ -77,11 +77,11 @@
               <tbody>
               <tr>
                 <td>Total Investment</td>
-                <td>{{ stats.amountInvested / 100000000 | number: '1.2-2' }} BTC</td>
+                <td>{{ stats.amountInvested / 100000000 | number: '1.8-8' }} BTC</td>
               </tr>
               <tr>
                 <td>Total Spent By Founder</td>
-                <td>{{ stats.amountSpentSoFarByFounder / 100000000 | number: '1.2-2' }} BTC</td>
+                <td>{{ stats.amountSpentSoFarByFounder / 100000000 | number: '1.8-8' }} BTC</td>
               </tr>
               <tr>
                 <td>Total Investors</td>
@@ -95,7 +95,7 @@
               <tbody>
               <tr>
                 <td>Withdrawn Amount</td>
-                <td>{{ stats.amountInPenalties / 100000000 | number: '1.2-2' }} BTC</td>
+                <td>{{ stats.amountInPenalties / 100000000 | number: '1.8-8' }} BTC</td>
               </tr>
               <tr>
                 <td>Number of Rescinded Investments</td>
@@ -120,7 +120,7 @@
         <tbody>
         <tr *ngFor="let investment of investments; let i = index;">
           <td class="amount text-left">
-            {{ investment.totalAmount / 100000000 | number: '1.2-2' }} BTC
+            {{ investment.totalAmount / 100000000 | number: '1.8-8' }} BTC
           </td>
           <td class="txid text-left">
             <a [routerLink]="['/tx' | relativeUrl, investment.transactionId]">
