@@ -126,7 +126,22 @@ const defaultEnv: Env = {
   'ADDITIONAL_CURRENCIES': false,
   'SERVICES_API': 'https://mempool.space/api/v1/services',
   'PROD_DOMAINS': [],
-  'ANGOR_ENABLED': false
+  'ANGOR_ENABLED': false,
+  'customize': {
+    'theme': 'default', // Theme of the application (e.g., 'default', 'dark', 'light')
+    'enterprise': 'Angor', // Optional: Identifier for enterprise-specific customizations
+    'branding': {
+      'name': 'Angor', // Name of the enterprise or branding
+      'title': 'Angor Dashboard', // Title to display in the application
+      'img': '/resources/angor/angor-logo-text-light.svg', // Path to the main logo
+      'header_img': '/resources/angor/angor-logo-text-light.svg', // Path to the header logo
+      'footer_img': '/resources/angor/angor-logo-text-light.svg', // Path to the footer logo
+      'rounded_corner': true // Whether the logos should have rounded corners
+    },
+    'dashboard': {
+      'widgets': []
+    }
+  }
 };
 
 @Injectable({
