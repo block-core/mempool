@@ -603,9 +603,11 @@ export class ApiService {
     );
   }
 
-  getAngorProjectInvestments(angorId: string): Observable<AngorProjectInvestment[]> {
+  getAngorProjectInvestments(angorId: string, from: number, limit: number): Observable<AngorProjectInvestment[]> {
     return this.httpClient.get<AngorProjectInvestment[]>(
-      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments'
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments' +
+      (from == undefined ? '' : '?offset=' + from) + 
+      (limit == undefined ? '' : '&limit=' + limit)
     );
   }
 }

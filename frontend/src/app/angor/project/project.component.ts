@@ -17,6 +17,8 @@ export class ProjectComponent implements OnInit {
   projectInvestments$: Observable<AngorProjectInvestment[]> | null = null;
   isLoading = true;
   error: HttpErrorResponse | null = null;
+  investmentPage: number = 1;
+  investmentsPerPage: number = 10;
 
   constructor(
     private route: ActivatedRoute,
@@ -42,7 +44,9 @@ export class ProjectComponent implements OnInit {
         return this.apiService.getAngorProjectStats$(angorId).pipe(
           switchMap(stats => {
             this.projectStats$ = of(stats);
-            return this.apiService.getAngorProjectInvestments(angorId);
+            const limit = this.investmentsPerPage;           
+            const offset = (this.investmentPage - 1) * limit;
+            return this.apiService.getAngorProjectInvestments(angorId, offset, limit);
           }),
           map(investments => {
             this.projectInvestments$ = of(investments);
@@ -62,5 +66,23 @@ export class ProjectComponent implements OnInit {
       })
     )
       .subscribe();
+  }
+
+  onInvestmentPageChange(newPage: number): void {
+    this.investmentPage = newPage;
+    this.angorId$.pipe(
+      switchMap(angorId => {
+        if (!angorId) {
+          throw new Error('Angor ID is missing.');
+        }
+        this.isLoading = true;
+        const limit = this.investmentsPerPage;
+        const offset = (this.investmentPage - 1) * limit;
+        return this.apiService.getAngorProjectInvestments(angorId, offset, limit);
+      })
+    ).subscribe(investments => {
+      this.projectInvestments$ = of(investments);
+      this.isLoading = false;
+    });
   }
 }

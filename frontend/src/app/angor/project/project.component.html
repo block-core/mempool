@@ -133,6 +133,9 @@
         </tr>
         </tbody>
       </table>
+      <ngb-pagination [collectionSize]="(projectStats$ | async)?.investorCount" [pageSize]="investmentsPerPage"
+        [(page)]="investmentPage" (pageChange)="onInvestmentPageChange($event)" [boundaryLinks]="true">
+      </ngb-pagination>
       </div>
     </div>
   </ng-container>
