@@ -603,11 +603,17 @@ export class ApiService {
     );
   }
 
-  getAngorProjectInvestments(angorId: string, from: number, limit: number): Observable<AngorProjectInvestment[]> {
+  getAngorProjectInvestments(angorId: string, from?: number, limit?: number): Observable<AngorProjectInvestment[]> {
+    const queryParams = new URLSearchParams();
+    if (from) {
+      queryParams.append('offset', from.toString());
+    }
+    if (limit) {
+      queryParams.append('limit', limit.toString());
+    }
+    const queryString = queryParams.toString();
     return this.httpClient.get<AngorProjectInvestment[]>(
-      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments' +
-      (from == undefined ? '' : '?offset=' + from) + 
-      (limit == undefined ? '' : '&limit=' + limit)
+      this.apiBaseUrl + this.apiBasePath + '/api/v1/query/Angor/projects/' + angorId + '/investments/' + queryString
     );
   }
 }
