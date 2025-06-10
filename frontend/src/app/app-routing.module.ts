@@ -217,6 +217,7 @@ let routes: Routes = [
   },
 ];
 
+// LIQUID ROUTING CONFIGURATION WITH ANGOR SUPPORT
 if (browserWindowEnv && browserWindowEnv.BASE_MODULE === 'liquid') {
   routes = [
     {
@@ -263,6 +264,12 @@ if (browserWindowEnv && browserWindowEnv.BASE_MODULE === 'liquid') {
       loadChildren: () => import('@app/liquid/liquid-graphs.module').then(m => m.LiquidGraphsModule),
       data: { preload: true },
     },
+    // This loads the main master page module which contains Angor routes
+    {
+      path: '',
+      loadChildren: () => import('@app/master-page.module').then(m => m.MasterPageModule),
+      data: { preload: true },
+    },
     {
       path: '',
       loadChildren: () => import ('@app/liquid/liquid-master-page.module').then(m => m.LiquidMasterPageModule),
@@ -288,6 +295,31 @@ if (browserWindowEnv && browserWindowEnv.BASE_MODULE === 'liquid') {
           loadChildren: () => import('@app/previews.module').then(m => m.PreviewsModule)
         },
       ],
+    },
+    // Add missing routes that were in the main configuration
+    {
+      path: 'clock',
+      redirectTo: 'clock/mempool/0'
+    },
+    {
+      path: 'clock/:mode',
+      redirectTo: 'clock/:mode/0'
+    },
+    {
+      path: 'clock/:mode/:index',
+      component: ClockComponent,
+    },
+    {
+      path: 'view/block/:id',
+      component: BlockViewComponent,
+    },
+    {
+      path: 'view/mempool-block/:index',
+      component: MempoolBlockViewComponent,
+    },
+    {
+      path: 'view/blocks',
+      component: EightBlocksComponent,
     },
     {
       path: 'status',

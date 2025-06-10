@@ -1,0 +1,75 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <h1 class="h2" i18n="angor.projects-title">Angor Projects</h1>
+      <p i18n="angor.projects-description">Crowdfunding projects on the Liquid Network</p>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row mb-4" *ngIf="stats$ | async as stats">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ stats.totalProjects }}</h5>
+          <p class="card-text" i18n="angor.total-projects">Total Projects</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ formatSats(stats.totalFunding) }}</h5>
+          <p class="card-text" i18n="angor.total-funding">Total Funding</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ stats.activeProjects }}</h5>
+          <p class="card-text" i18n="angor.active-projects">Active Projects</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects List -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card" *ngFor="let project of projects$ | async">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <h5 class="card-title">{{ project.name }}</h5>
+              <p class="card-text">{{ project.description }}</p>
+              <span class="badge" [class.badge-success]="project.status === 'completed'" 
+                    [class.badge-primary]="project.status === 'active'"
+                    [class.badge-secondary]="project.status === 'cancelled'">
+                {{ project.status | titlecase }}
+              </span>
+            </div>
+            <div class="col-md-4">
+              <div class="text-right">
+                <h6>{{ formatSats(project.currentFunding) }} / {{ formatSats(project.fundingGoal) }}</h6>
+                <div class="progress mb-2">
+                  <div class="progress-bar" 
+                       [style.width.%]="getProgressPercentage(project)"
+                       [class.bg-success]="project.status === 'completed'"
+                       [class.bg-primary]="project.status === 'active'">
+                  </div>
+                </div>
+                <small class="text-muted">{{ getProgressPercentage(project) }}% funded</small>
+              </div>
+              <div class="mt-2">
+                <a [routerLink]="['/angor/project', project.id]" class="btn btn-outline-primary btn-sm">
+                  View Details
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

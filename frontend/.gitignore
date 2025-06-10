@@ -7,7 +7,6 @@
 server.run.js
 
 # docker
-Dockerfile
 entrypoint.sh
 nginx-mempool.conf
 nginx.conf
