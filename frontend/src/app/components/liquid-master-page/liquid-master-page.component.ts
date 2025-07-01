@@ -22,7 +22,7 @@ export class LiquidMasterPageComponent implements OnInit {
   footerVisible = true;
 
   constructor(
-    private stateService: StateService,
+    public stateService: StateService,
     private languageService: LanguageService,
     private enterpriseService: EnterpriseService,
     private navigationService: NavigationService,
@@ -35,7 +35,7 @@ export class LiquidMasterPageComponent implements OnInit {
     this.urlLanguage = this.languageService.getLanguageForUrl();
     this.navigationService.subnetPaths.subscribe((paths) => {
       this.networkPaths = paths;
-      if (paths.liquid.indexOf('docs') > -1) {
+      if (paths.liquid && paths.liquid.indexOf('docs') > -1) {
         this.footerVisible = false;
       } else {
         this.footerVisible = true;
@@ -49,5 +49,9 @@ export class LiquidMasterPageComponent implements OnInit {
 
   onResize(): void {
     this.isMobile = window.innerWidth <= 767.98;
+  }
+
+  isAngorEnabledForLiquid(): boolean {
+    return true; // Enable Angor for all Liquid networks
   }
 }

@@ -136,6 +136,10 @@ const routes: Routes = [
         path: 'api',
         loadChildren: () => import('../docs/docs.module').then(m => m.DocsModule)
       },
+      {
+        path: 'angor',
+        loadChildren: () => import('../angor/angor.module').then(m => m.AngorModule)
+      },
     ],
   },
 ];
