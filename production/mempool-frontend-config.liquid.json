@@ -8,6 +8,7 @@
   "BISQ_ENABLED": true,
   "BISQ_SEPARATE_BACKEND": true,
   "SIGNET_ENABLED": true,
+  "ANGOR_ENABLED": true,
   "MEMPOOL_WEBSITE_URL": "https://mempool.space",
   "LIQUID_WEBSITE_URL": "https://liquid.network",
   "BISQ_WEBSITE_URL": "https://bisq.markets",

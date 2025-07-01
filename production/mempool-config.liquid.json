@@ -79,5 +79,8 @@
   "STATISTICS": {
     "ENABLED": true,
     "TX_PER_SECOND_SAMPLE_PERIOD": 150
+  },
+  "ANGOR": {
+    "ENABLED": true
   }
 }
