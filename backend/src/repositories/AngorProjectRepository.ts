@@ -54,25 +54,34 @@ class AngorProjectRepository {
   ): Promise<void> {
     try {
       const query = `INSERT INTO angor_projects
-          (
-            id,
-            address_on_fee_output,
-            creation_transaction_status,
-            created_on_block,
-            txid,
-            founder_key,
-            nostr_event_id
-          )
-          VALUES ('${id}', '${addressOnFeeOutput}', '${transactionStatus}', '${createdOnBlock}', '${txid}', '${founderKey}', '${nostrEventId}')
-          ON DUPLICATE KEY UPDATE
-            creation_transaction_status = '${transactionStatus}'
-        `;
+        (
+          id,
+          address_on_fee_output,
+          creation_transaction_status,
+          created_on_block,
+          txid,
+          founder_key,
+          nostr_event_id
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          creation_transaction_status = ?
+      `;
 
-      await DB.query(query);
+      await DB.query(query, [
+        id,
+        addressOnFeeOutput,
+        transactionStatus,
+        createdOnBlock || null,
+        txid,
+        founderKey,
+        nostrEventId || null,
+        transactionStatus
+      ]);
     } catch (e: any) {
       logger.err(
         `Cannot save Angor project into db. Reason: ` +
-          (e instanceof Error ? e.message : e)
+        (e instanceof Error ? e.message : e)
       );
 
       throw e;
