@@ -78,6 +78,9 @@
       <li class="nav-item" routerLinkActive="active" id="btn-assets">
         <a class="nav-link" [routerLink]="['/assets' | relativeUrl]" (click)="collapse()"><fa-icon [icon]="['fas', 'database']" [fixedWidth]="true" i18n-title="master-page.assets" title="Assets"></fa-icon></a>
       </li>
+      <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" id="btn-angor" *ngIf="stateService.isAngorEnabled()">
+        <a class="nav-link" [routerLink]="['/angor' | relativeUrl]" (click)="collapse()"><fa-icon [icon]="['fas', 'boxes-stacked']" [fixedWidth]="true" title="Angor Projects"></fa-icon></a>
+      </li>
       <li class="nav-item mr-2" routerLinkActive="active" id="btn-docs">
         <a class="nav-link" [routerLink]="['/docs' | relativeUrl]" (click)="collapse()"><fa-icon [icon]="['fas', 'book']" [fixedWidth]="true" i18n-title="documentation.title" title="Documentation"></fa-icon></a>
       </li>

@@ -421,8 +421,10 @@ export class StateService {
   }
 
   isAngorEnabled() {
-    return this.env.ANGOR_ENABLED;
-  }
+    // Enable Angor for liquid networks specifically
+    return (this.env.ANGOR_ENABLED || this.env.BASE_MODULE === 'liquid') && 
+           (this.network === 'liquid' || this.network === 'liquidtestnet' || this.env.BASE_MODULE === 'liquid');
+  } 
 
   getHiddenProp(){
     const prefixes = ['webkit', 'moz', 'ms', 'o'];

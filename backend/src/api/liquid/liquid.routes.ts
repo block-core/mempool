@@ -12,6 +12,10 @@ class LiquidRoutes {
       .get(config.MEMPOOL.API_URL_PREFIX + 'assets/featured', this.$getAllFeaturedLiquidAssets)
       .get(config.MEMPOOL.API_URL_PREFIX + 'asset/:assetId/icon', this.getLiquidIcon)
       .get(config.MEMPOOL.API_URL_PREFIX + 'assets/group/:id', this.$getAssetGroup)
+      // ADD ANGOR ROUTES FOR LIQUID
+      .get(config.MEMPOOL.API_URL_PREFIX + 'angor/projects', this.$getAngorProjects)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'angor/project/:id', this.$getAngorProject)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'angor/stats', this.$getAngorStats)
       ;
     
     if (config.DATABASE.ENABLED) {
@@ -35,6 +39,80 @@ class LiquidRoutes {
     }
   }
 
+  // ADD ANGOR METHODS
+  private async $getAngorProjects(req: Request, res: Response) {
+    try {
+      // Added some mock data, will get replaced by original ones when actual projects are present on op of liquid
+      const projects = [
+        {
+          id: '1',
+          name: 'Liquid DeFi Platform',
+          description: 'Building a decentralized finance platform on Liquid Network',
+          fundingGoal: 100000000,
+          currentFunding: 45000000,
+          status: 'active',
+          createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+          endDate: Date.now() + 60 * 24 * 60 * 60 * 1000,
+        },
+        {
+          id: '2',
+          name: 'Liquid NFT Marketplace',
+          description: 'A marketplace for NFTs on the Liquid sidechain',
+          fundingGoal: 50000000,
+          currentFunding: 50000000,
+          status: 'completed',
+          createdAt: Date.now() - 90 * 24 * 60 * 60 * 1000,
+          endDate: Date.now() - 10 * 24 * 60 * 60 * 1000,
+        }
+      ];
+      
+      res.header('Pragma', 'public');
+      res.header('Cache-control', 'public');
+      res.setHeader('Expires', new Date(Date.now() + 1000 * 60 * 5).toUTCString());
+      res.json(projects);
+    } catch (e) {
+      handleError(req, res, 500, e instanceof Error ? e.message : e);
+    }
+  }
+
+  private async $getAngorProject(req: Request, res: Response) {
+    try {
+      const project = {
+        id: req.params.id,
+        name: 'Sample Project',
+        description: 'Sample project description',
+        fundingGoal: 100000000,
+        currentFunding: 45000000,
+        status: 'active',
+        createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+        endDate: Date.now() + 60 * 24 * 60 * 60 * 1000,
+      };
+      
+      res.header('Pragma', 'public');
+      res.header('Cache-control', 'public');
+      res.setHeader('Expires', new Date(Date.now() + 1000 * 60 * 5).toUTCString());
+      res.json(project);
+    } catch (e) {
+      handleError(req, res, 500, e instanceof Error ? e.message : e);
+    }
+  }
+
+  private async $getAngorStats(req: Request, res: Response) {
+    try {
+      const stats = {
+        totalProjects: 2,
+        totalFunding: 95000000,
+        activeProjects: 1
+      };
+      
+      res.header('Pragma', 'public');
+      res.header('Cache-control', 'public');
+      res.setHeader('Expires', new Date(Date.now() + 1000 * 60 * 5).toUTCString());
+      res.json(stats);
+    } catch (e) {
+      handleError(req, res, 500, e instanceof Error ? e.message : e);
+    }
+  }
 
   private getLiquidIcon(req: Request, res: Response) {
     const result = icons.getIconByAssetId(req.params.assetId);
@@ -254,7 +332,6 @@ class LiquidRoutes {
       handleError(req, res, 500, e instanceof Error ? e.message : e);
     }
   }
-
 }
 
 export default new LiquidRoutes();

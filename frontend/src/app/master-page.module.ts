@@ -13,6 +13,7 @@ import { RbfList } from '@components/rbf-list/rbf-list.component';
 import { ServerHealthComponent } from '@components/server-health/server-health.component';
 import { ServerStatusComponent } from '@components/server-health/server-status.component';
 import { FaucetComponent } from '@components/faucet/faucet.component'
+import { AngorProjectsComponent } from '@components/angor/angor-projects/angor-projects.component';
 
 const browserWindow = window || {};
 // @ts-ignore
@@ -153,6 +154,7 @@ export class MasterPageRoutingModule { }
   ],
   declarations: [
     MasterPageComponent,
+    AngorProjectsComponent,
   ],
   exports: [
     MasterPageComponent,
