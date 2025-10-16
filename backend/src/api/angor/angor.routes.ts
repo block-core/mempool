@@ -3,9 +3,8 @@ import config from '../../config';
 import AngorProjectRepository from '../../repositories/AngorProjectRepository';
 import AngorInvestmentRepository from '../../repositories/AngorInvestmentRepository';
 import transactionUtils from '../transaction-utils';
-import { computeAdvancedStats, computeStatsTally } from './angor-stats';
-import bitcoinApi from '../bitcoin/bitcoin-api-factory';
-import { IEsploraApi } from "../bitcoin/esplora-api.interface";
+import { getAdvancedProjectStats } from './angor-stats';
+import { IEsploraApi } from '../bitcoin/esplora-api.interface';
 
 interface ProjectsPayloadItem {
   founderKey: string;
@@ -56,7 +55,7 @@ export interface AngorVout {
   spendingTxId: string | undefined;
   investmentTxId: string;
   isLast: boolean;
-  childVouts?: IEsploraApi.Vout[]
+  childVouts?: IEsploraApi.Vout[];
 }
 
 class AngorRoutes {
@@ -157,7 +156,7 @@ class AngorRoutes {
         projectIdentifier: project.id,
         createdOnBlock: project.created_on_block,
         trxId: project.txid,
-        nostrEventId: project.nostr_event_id
+        nostrEventId: project.nostr_event_id,
       }))
       .sort(
         (p1: ProjectsPayloadItem, p2: ProjectsPayloadItem) =>
@@ -226,17 +225,25 @@ class AngorRoutes {
 
       // fetch project investments
 
-      let advancedStats: AdvancedProjectStats = {
+      const advancedStats: AdvancedProjectStats = {
         amountSpentSoFarByFounder: 0,
         amountInPenalties: 0,
-        countInPenalties: 0
+        countInPenalties: 0,
       };
-      const investments = await AngorProjectRepository.$getProjectInvestments(projectID);
+      const investments = await AngorProjectRepository.$getProjectInvestments(
+        projectID
+      );
+
       const filteredInvestments = investments.filter((investment) => {
-        return !!investment.transaction_id && !!investment.investor_npub && !!investment.amount_sats;
+        return (
+          !!investment.transaction_id &&
+          !!investment.investor_npub &&
+          !!investment.amount_sats
+        );
       });
+
       if (filteredInvestments.length > 0) {
-        const spentVouts: AngorVout[][] = await Promise.all(
+        await Promise.all(
           investments.map(async (investment) => {
             //fetch transaction for each investment, with full info about vouts
             const fullTr = await transactionUtils.$getTransactionExtended(
@@ -244,54 +251,23 @@ class AngorRoutes {
               true,
               false,
               false,
-              true);
-            // fetch and extract spent status and values for each vout.
-
-            const vouts = await Promise.all(
-              fullTr.vout
-                .filter((v) => v.scriptpubkey_type === 'v1_p2tr')
-                .map(async (v, i, arr) => {
-                  const voutOutspend = await bitcoinApi.$getOutspend(investment.transaction_id, i);
-                  const isLast = i === arr.length - 1;
-
-                  let childVouts: IEsploraApi.Vout[] = [];
-                  if (isLast && voutOutspend.spent && voutOutspend.txid) {
-                    const lastVoutTx = await transactionUtils.$getTransactionExtended(
-                      voutOutspend.txid,
-                      true,
-                      false,
-                      false,
-                      true
-                    );
-                    if (lastVoutTx.vout.length > 0) {
-                      childVouts = lastVoutTx.vout;
-                    }
-                  }
-                  return {
-                    value: v.value,
-                    spent: voutOutspend.spent,
-                    spendingTxId: voutOutspend.txid,
-                    investmentTxId: investment.transaction_id,
-                    isLast,
-                    ... childVouts.length > 0 && { childVouts }
-                  };
-                })
+              true
             );
 
-            // filter out vouts that are not spent and therefore dont have a spending transaction info
-            return vouts.filter((vout): vout is AngorVout => {
-              return vout !== undefined && vout.spent && vout.spendingTxId !== undefined;
-            });
-          }));
+            const advancedInvestmentStats = await getAdvancedProjectStats(
+              fullTr.vout
+            );
 
-        // iterate over each vout and accumulate required information into a tally
-        // sorted by a composite key of investment transaction id and spending transaction id.
-        const tally: Record<string, StatsTally> = computeStatsTally(spentVouts);
-
-        // Iterate over the Stats Tally and accumulate final information about investor and found
-        // spending patterns.
-        advancedStats = computeAdvancedStats(tally);
+            advancedStats.amountSpentSoFarByFounder +=
+              advancedInvestmentStats.amountSpentSoFarByFounder;
+            advancedStats.amountInPenalties +=
+              advancedInvestmentStats.amountInPenalties;
+            advancedStats.countInPenalties +=
+              advancedInvestmentStats.countInPenalties;
+          })
+        );
       }
+
       // Angor project statistics.
       const projectStats = await AngorProjectRepository.$getProjectStats(
         projectID
@@ -307,7 +283,7 @@ class AngorRoutes {
       const payload: ProjectStatsPayloadItem = {
         ...advancedStats,
         investorCount: projectStats.investor_count,
-        amountInvested: parseInt(projectStats.amount_invested) || 0
+        amountInvested: parseInt(projectStats.amount_invested) || 0,
       };
 
       res.json(payload);
@@ -315,7 +291,7 @@ class AngorRoutes {
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'An unexpected error occurred.',
-        details: error
+        details: error,
       });
     }
   }
@@ -390,17 +366,18 @@ class AngorRoutes {
       );
 
     // Adjust DB data to confirm ProjectInvestmentPayloadItem interface.
-    const payload: ProjectInvestmentPayloadItem[] = projectInvestments.length > 0
-      ? projectInvestments
-      .map((investment) => ({
-        investorPublicKey: investment.investor_npub,
-        totalAmount: investment.amount_sats,
-        transactionId: investment.transaction_id,
-        hashOfSecret: investment.secret_hash,
-        isSeeder: investment.is_seeder,
-      }))
-      .sort()
-      : [];
+    const payload: ProjectInvestmentPayloadItem[] =
+      projectInvestments.length > 0
+        ? projectInvestments
+            .map((investment) => ({
+              investorPublicKey: investment.investor_npub,
+              totalAmount: investment.amount_sats,
+              transactionId: investment.transaction_id,
+              hashOfSecret: investment.secret_hash,
+              isSeeder: investment.is_seeder,
+            }))
+            .sort()
+        : [];
 
     // Amount of confirmed Angor project investments.
     const investmentsCount =
