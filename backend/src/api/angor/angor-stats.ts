@@ -74,73 +74,80 @@ export async function getAdvancedProjectStats(
     (vout) => vout.scriptpubkey_type === 'v1_p2tr'
   );
 
-  const addresses = stageVouts.map((vout) => vout.scriptpubkey_address);
+  for (const stageVout of stageVouts) {
+    const { scriptpubkey_address: address } = stageVout;
 
-  if (addresses) {
-    for (const address of addresses) {
-      if (address) {
-        const transactions = await bitcoinApi.$getAddressTransactions(
-          address,
-          ''
-        );
+    if (address) {
+      const transactions = await bitcoinApi.$getAddressTransactions(
+        address,
+        ''
+      );
 
-        if (transactions) {
-          transactions.forEach((transaction) => {
-            // If there are 4 witnesses
-            // and inner_witnessscript_asm has OP_CHECKSIGVERIFY and OP_CHECKSIG
-            // then transaction is considered as spent by investor to penalties
-            const spentByInvestorToPenaltyTransaction = transaction.vin.find(
+      transactions.forEach((transaction) => {
+        // If there are 4 witnesses
+        // and inner_witnessscript_asm has OP_CHECKSIGVERIFY and OP_CHECKSIG
+        // then transaction is considered as spent by investor to penalties
+
+        const spentByInvestorToPenaltyTransaction = transaction.vin
+          // make sure transaction's previous vout is exactly the same as stage's vout
+          .filter(
+            (vin) => JSON.stringify(stageVout) === JSON.stringify(vin.prevout)
+          )
+          .find(
+            (vin) =>
+              vin.witness.length === 4 &&
+              vin.inner_witnessscript_asm.includes('OP_CHECKSIGVERIFY') &&
+              vin.inner_witnessscript_asm.includes('OP_CHECKSIG')
+          );
+
+        if (spentByInvestorToPenaltyTransaction) {
+          const penaltiesStats = transaction.vout.reduce(
+            (
+              acc: { amount: number; count: number },
+              vout: IEsploraApi.Vout
+            ) => {
+              const { value } = vout;
+
+              acc.amount += value;
+
+              if (value) {
+                acc.count += 1;
+              }
+
+              return acc;
+            },
+            { amount: 0, count: 0 }
+          );
+
+          stats.amountInPenalties += penaltiesStats.amount;
+          stats.countInPenalties += penaltiesStats.count;
+        } else {
+          // If there are 3 witnesses
+          // and inner_witnessscript_asm has OP_CLTV
+          // then transaction is considered as spent by founder
+          const spentByFounderTransaction = transaction.vin
+            // make sure transaction's previous vout is exactly the same as stage's vout
+            .filter(
+              (vin) => JSON.stringify(stageVout) === JSON.stringify(vin.prevout)
+            )
+            .find(
               (vin) =>
-                vin.witness.length === 4 &&
-                vin.inner_witnessscript_asm.includes('OP_CHECKSIGVERIFY') &&
-                vin.inner_witnessscript_asm.includes('OP_CHECKSIG')
+                vin.witness.length === 3 &&
+                vin.inner_witnessscript_asm.includes('OP_CLTV')
             );
 
-            if (spentByInvestorToPenaltyTransaction) {
-              const penaltiesStats = transaction.vout.reduce(
-                (
-                  acc: { amount: number; count: number },
-                  vout: IEsploraApi.Vout
-                ) => {
-                  const { value } = vout;
+          if (spentByFounderTransaction) {
+            stats.amountSpentSoFarByFounder += transaction.vout.reduce(
+              (acc: number, vout: IEsploraApi.Vout) => {
+                acc += vout.value;
 
-                  acc.amount += value;
-
-                  if (value) {
-                    acc.count += 1;
-                  }
-
-                  return acc;
-                },
-                { amount: 0, count: 0 }
-              );
-
-              stats.amountInPenalties += penaltiesStats.amount;
-              stats.countInPenalties += penaltiesStats.count;
-            } else {
-              // If there are 3 witnesses
-              // and inner_witnessscript_asm has OP_CLTV
-              // then transaction is considered as spent by founder
-              const spentByFounderTransaction = transaction.vin.find(
-                (vin) =>
-                  vin.witness.length === 3 &&
-                  vin.inner_witnessscript_asm.includes('OP_CLTV')
-              );
-
-              if (spentByFounderTransaction) {
-                stats.amountSpentSoFarByFounder += transaction.vout.reduce(
-                  (acc: number, vout: IEsploraApi.Vout) => {
-                    acc += vout.value;
-
-                    return acc;
-                  },
-                  0
-                );
-              }
-            }
-          });
+                return acc;
+              },
+              0
+            );
+          }
         }
-      }
+      });
     }
   }
 
