@@ -42,6 +42,7 @@ export interface AdvancedProjectStats {
   amountSpentSoFarByFounder: number;
   amountInPenalties: number;
   countInPenalties: number;
+  amountSpentSoFarByInvestorNoPenalty: number;
 }
 
 export interface StatsTally {
@@ -229,6 +230,7 @@ class AngorRoutes {
         amountSpentSoFarByFounder: 0,
         amountInPenalties: 0,
         countInPenalties: 0,
+        amountSpentSoFarByInvestorNoPenalty: 0,
       };
       const investments = await AngorProjectRepository.$getProjectInvestments(
         projectID
@@ -264,6 +266,8 @@ class AngorRoutes {
               advancedInvestmentStats.amountInPenalties;
             advancedStats.countInPenalties +=
               advancedInvestmentStats.countInPenalties;
+            advancedStats.amountSpentSoFarByInvestorNoPenalty +=
+              advancedInvestmentStats.amountSpentSoFarByInvestorNoPenalty;
           })
         );
       }

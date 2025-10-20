@@ -56,7 +56,12 @@ export function computeAdvancedStats(
       }
       return obj;
     },
-    { amountSpentSoFarByFounder: 0, amountInPenalties: 0, countInPenalties: 0 }
+    {
+      amountSpentSoFarByFounder: 0,
+      amountInPenalties: 0,
+      countInPenalties: 0,
+      amountSpentSoFarByInvestorNoPenalty: 0,
+    }
   );
 }
 
@@ -67,6 +72,7 @@ export async function getAdvancedProjectStats(
     amountSpentSoFarByFounder: 0,
     amountInPenalties: 0,
     countInPenalties: 0,
+    amountSpentSoFarByInvestorNoPenalty: 0,
   };
 
   // scriptpubkey_type v1_p2tr indicates that it a stage vout
@@ -145,6 +151,34 @@ export async function getAdvancedProjectStats(
               },
               0
             );
+          } else {
+            // The following kinf of transaction are planned in Angor projects v2.
+            // Uncomment lines below to gather amountSpentSoFarByInvestorNoPenalty statistics
+            // If there are 3 witnesses
+            // and inner_witnessscript_asm has OP_CHECKSIG opcode
+            // and doesn't have OP_CHECKSIGVERIFY opcode
+            // const amountSpentSoFarByInvestorNoPenalty = transaction.vin
+            //   // make sure transaction's previous vout is exactly the same as stage's vout
+            //   .filter(
+            //     (vin) =>
+            //       JSON.stringify(stageVout) === JSON.stringify(vin.prevout)
+            //   )
+            //   .find(
+            //     (vin) =>
+            //       vin.witness.length === 3 &&
+            //       vin.inner_witnessscript_asm.includes('OP_CHECKSIG') &&
+            //       !vin.inner_witnessscript_asm.includes('OP_CHECKSIGVERIFY')
+            //   );
+            // if (amountSpentSoFarByInvestorNoPenalty) {
+            //   stats.amountSpentSoFarByInvestorNoPenalty +=
+            //     transaction.vout.reduce(
+            //       (acc: number, vout: IEsploraApi.Vout) => {
+            //         acc += vout.value;
+            //         return acc;
+            //       },
+            //       0
+            //     );
+            // }
           }
         }
       });

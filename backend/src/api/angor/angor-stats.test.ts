@@ -142,12 +142,14 @@ describe('AngorStats', () => {
       amountSpentSoFarByFounder: 9899862,
       amountInPenalties: 198198784,
       countInPenalties: 6,
+      amountSpentSoFarByInvestorNoPenalty: 0,
     };
 
     const advancedStats: AdvancedProjectStats = {
       amountSpentSoFarByFounder: 0,
       amountInPenalties: 0,
       countInPenalties: 0,
+      amountSpentSoFarByInvestorNoPenalty: 0,
     };
 
     jest
@@ -1185,6 +1187,9 @@ describe('AngorStats', () => {
     );
     expect(advancedStats.countInPenalties).toEqual(
       expectedStats.countInPenalties
+    );
+    expect(advancedStats.amountSpentSoFarByInvestorNoPenalty).toEqual(
+      expectedStats.amountSpentSoFarByInvestorNoPenalty
     );
   });
 });
